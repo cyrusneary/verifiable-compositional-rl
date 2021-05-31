@@ -18,7 +18,7 @@ To run the code, Python 3.8 is required with the following packages:
             if you do not already have it installed.
 
 Gurobi optimization software is also necessary. This can be downloaded from (https://www.gurobi.com/downloads/).
-Academic Gurobi licenses may be requested from (https://www.gurobi.com/downloads/end-user-license-agreement-academic/)
+Academic Gurobi licenses may be requested from (https://www.gurobi.com/downloads/end-user-license-agreement-academic/).
 
 ## Running examples
 
