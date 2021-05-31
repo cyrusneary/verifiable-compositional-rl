@@ -5,12 +5,12 @@ import numpy as np
 
 class Maze(MiniGridEnv):
     """
-    Maze environment.
-    
-    This environment is full observation.
-    The state is (x, y, dir) where x,y indicate
-    the agent's location in the environment and
-    dir indicates the direction it is facing.
+        Maze environment.
+
+        This environment is full observation.
+        The state is (x, y, dir) where x,y indicate
+        the agent's location in the environment and
+        dir indicates the direction it is facing.
     """
 
     # Enumeration of possible actions
@@ -26,16 +26,16 @@ class Maze(MiniGridEnv):
         slip_p=0.0,
     ):
 
-    """
-    Inputs
-    ------
-    agent_start_states : list
-        List of tuples representing the possible initial states 
-        (entry conditions) of the agent in the environment.
-    slip_p : float
-        Probability with which the agent "slips" on any given action,
-        and takes another action instead.
-    """
+        """
+        Inputs
+        ------
+        agent_start_states : list
+            List of tuples representing the possible initial states 
+            (entry conditions) of the agent in the environment.
+        slip_p : float
+            Probability with which the agent "slips" on any given action,
+            and takes another action instead.
+        """
 
         size = 20
         width = size
