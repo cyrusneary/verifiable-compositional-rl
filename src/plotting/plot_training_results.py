@@ -11,12 +11,6 @@ from utils.results_saver import Results
 import tikzplotlib
 
 # %%
-# load_folder_name = '2021-05-17_21-47-38_minigrid_labyrinth'
-load_folder_name = '2021-05-17_22-50-38_minigrid_labyrinth'
-load_folder_name = '2021-05-18_12-15-33_minigrid_labyrinth'
-load_folder_name = '2021-05-18_15-11-08_minigrid_labyrinth'
-load_folder_name = '2021-05-18_15-53-36_minigrid_labyrinth' # good example
-# load_folder_name = '2021-05-19_16-25-50_minigrid_labyrinth_baseline_one_component'
 load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 
 experiment_name = 'minigrid_labyrinth'
@@ -96,6 +90,7 @@ ax.plot([0.8e6, 0.8e6], [yl[0],yl[1]],
 
 save_path = os.path.join(os.path.curdir, 'figures', 'training_curves.tex')
 tikzplotlib.save(save_path)
+
 
 # %%
 

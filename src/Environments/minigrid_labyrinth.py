@@ -4,6 +4,14 @@ from gym_minigrid.window import Window
 import numpy as np
 
 class Maze(MiniGridEnv):
+    """
+    Maze environment.
+    
+    This environment is full observation.
+    The state is (x, y, dir) where x,y indicate
+    the agent's location in the environment and
+    dir indicates the direction it is facing.
+    """
 
     # Enumeration of possible actions
     class Actions(IntEnum):
@@ -12,21 +20,22 @@ class Maze(MiniGridEnv):
         right = 1
         forward = 2
 
-        # # Pick up an object
-        # pickup = 3
-        # # Drop an object
-        # drop = 4
-        # # Toggle/activate an object
-        # toggle = 5
-
-        # # Done completing task
-        # done = 6
-
     def __init__(
         self,
         agent_start_states = [(1,1,0)],
         slip_p=0.0,
     ):
+
+    """
+    Inputs
+    ------
+    agent_start_states : list
+        List of tuples representing the possible initial states 
+        (entry conditions) of the agent in the environment.
+    slip_p : float
+        Probability with which the agent "slips" on any given action,
+        and takes another action instead.
+    """
 
         size = 20
         width = size
@@ -100,13 +109,18 @@ class Maze(MiniGridEnv):
         self.mission = "get to the goal square"
 
     def gen_obs(self):
+        """
+        Generate the observation of the agent, which in this environment, is its state.
+        """
         pos = self.agent_pos
         direction = self.agent_dir
         obs_out = np.array([pos[0], pos[1], direction])
-
         return obs_out
 
     def step(self, action):
+        """
+        Step the environment.
+        """
         self.step_count += 1
 
         reward = 0
@@ -147,10 +161,6 @@ class Maze(MiniGridEnv):
         elif action == self.actions.forward:
             if fwd_cell == None or fwd_cell.can_overlap():
                 self.agent_pos = fwd_pos
-            # if fwd_cell != None and fwd_cell.type == 'goal':
-            #     done = True
-            #     reward = 1.0
-            #     info['task_complete'] = True
             if fwd_cell != None and fwd_cell.type == 'lava':
                 done = True
                 max_distance = np.array([self.width, self.height])
@@ -194,78 +204,7 @@ class Maze(MiniGridEnv):
 
         obs = self.gen_obs()
 
-        # if done is False:
-        #     distance = np.array([self.agent_pos[0] - self.goal_location[0], self.agent_pos[1] - self.goal_location[1]])
-        #     max_distance = np.array([self.width, self.height])
-        #     normalized_distance = np.linalg.norm(distance) / np.linalg.norm(max_distance)
-        #     reward = - normalized_distance
-
         return obs, reward, done, info
 
     def get_num_states(self):
         return self.width * self.height * 4 # position in the gridworld and also facing direction
-
-# # %%
-
-# from stable_baselines3 import PPO, DQN
-
-# env = Maze(slip_p=0.0)
-
-# model = PPO("MlpPolicy", 
-#             env, 
-#             verbose=1,
-#             n_steps=512,
-#             batch_size=64,
-#             gae_lambda=0.95,
-#             gamma=0.99,
-#             n_epochs=10,
-#             ent_coef=0.0,
-#             learning_rate=2.5e-4,
-#             clip_range=0.2)
-
-# # %%
-
-# # model.learn(total_timesteps=1e5)
-
-# # %%
-
-# count = 0
-# delta = 0.05
-# tol = 0.01
-# trials = 0
-# total_steps = 0
-
-# obs = env.reset()
-# trials = trials + 1
-
-# for tries in range(10):
-#     trials = trials + 1
-#     obs = env.reset()
-#     for i in range(100):
-#         total_steps = total_steps + 1
-#         action, _states = model.predict(obs, deterministic=True)
-#         obs, reward, done, info = env.step(action)
-#         env.render(highlight=False)
-#         if done:
-#             if info['task_complete']:
-#                 count = count + 1
-#             break
-
-# while total_steps < 3e4:
-# # while count/trials < 1 - delta + np.sqrt(-1/(2*trials) * np.log(tol)):
-#     certainty = np.exp(-2 * trials * (count/trials - (1-delta))**2)
-#     print('Num trials: {:d}, Estimated success prob: {:.3f}, Estimation certainty: {:.3f}'.format(trials, count/trials, certainty))
-#     # print(count/trials - (1 - delta + np.sqrt(-1/(2*trials) * np.log(tol))))
-#     obs = env.reset()
-#     trials = trials + 1
-#     for i in range(100):
-#         total_steps = total_steps + 1
-#         action, _states = model.predict(obs, deterministic=True)
-#         obs, reward, done, info = env.step(action)
-#         # env.render()
-#         if done:
-#             if info['task_complete']:
-#                 count = count + 1
-#             break
-
-# %%

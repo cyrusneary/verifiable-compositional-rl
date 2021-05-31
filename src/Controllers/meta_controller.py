@@ -4,9 +4,22 @@ class MetaController(object):
 
     """
     Object representing a meta controller.
+    This is the software object representing the composite system, comprising
+    of a meta-policy and a list of implemented sub-systems.
     """
 
     def __init__(self, meta_policy, controller_list, state_list):
+        """
+        Inputs
+        ------
+        meta_policy : numpy array
+            Numpy array representing the meta-policy.
+        controller_list : list
+            List of MinigridController objects.
+        state_list : list
+            List of HLM states. Each of these high-level states is itself
+            a list of low-level environment states.
+        """
         self.meta_policy = meta_policy
         self.controller_list = controller_list
         self.controller_indeces = np.arange(len(controller_list))
@@ -14,13 +27,14 @@ class MetaController(object):
         self.current_controller_ind = None
 
     def obs_mapping(self, obs):
+        """
+        Map from an environment observation (state) to the corresponding high-level state.
 
-        # pos = (obs[0], obs[1])
-        # if pos in self.state_list:
-        #     high_level_state = self.state_list.index(pos)
-        # else:
-        #     raise RuntimeError("Trying to enact meta-policy from state that doesn't exist in high-level state space.")
-
+        Inputs
+        ------
+        obs : tuple
+            Tuple representing the current environment observation (state).
+        """
         state = (obs[0], obs[1], obs[2])
 
         obs_in_abstract_state = False
@@ -33,18 +47,23 @@ class MetaController(object):
         if not obs_in_abstract_state:
             raise RuntimeError("Trying to enact meta-policy from state that doesn't exist in high-level state space.")
 
-        # for high_level_state_ind in range(len(self.state_list)):
-        #     state_set = self.state_list[high_level_state_ind]
-        #     if obs in state_set:
-        #         high_level_state = high_level_state_ind
-        #         obs_in_abstract_state = True
-
         return high_level_state
 
     def reset(self):
         self.current_controller_ind = None
 
     def predict(self, obs, deterministic=True):
+        """
+        Get the system's action, given the current environment observation (state)
+
+        Inputs
+        ------
+        obs : tuple
+            Tuple representing the current environment observation (state).
+        deterministic (optional) : bool
+            Flag indicating whether or not to return a deterministic action or a distribution
+            over actions.
+        """
 
         if self.current_controller_ind is not None:
             # Grab the currently selected controller
@@ -114,6 +133,7 @@ class MetaController(object):
     def demonstrate_capabilities(self, env, n_episodes=5, n_steps=200, render=True):
         """
         Run the meta-controller in an environment and visualize the results.
+
         Inputs
         ------
         env : Minigrid gym environment

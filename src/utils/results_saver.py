@@ -4,6 +4,7 @@ import os
 
 class Results(object):
     """
+    Object to save data throughout training of compositional RL systems.
     """
 
     def __init__(self, 
@@ -14,6 +15,31 @@ class Results(object):
                 estimation_rollouts=None,
                 random_seed=None, 
                 load_dir=None):
+        """
+        Either all inputs should be specified except for load_dir, 
+        or load_dir must be specified.
+
+        Inputs
+        ------
+        controller_list (optional) : list
+            list of MinigridController objects
+        env_settings (optional) : dict
+            Dictionary containing the environment settings
+        prob_threshold (optional) : float
+            The required probability of overall task success
+        training_iters (optional) : int
+            The number of training steps to use when training
+            each sub-system in the main iterative compositional
+            RL loop.
+        estimation_rollouts (optional) : int
+            The number of rollouts to use when empirically estimating
+            (sub-)task success probabilities.
+        random_seed (optional) : int
+            Random seed used in the experiment.
+        load_dir (optional) : str
+            String pointing to the results file to load from a previous
+            run of the experiment.
+        """
         
         if load_dir is None:
             assert(controller_list is not None)
@@ -61,6 +87,14 @@ class Results(object):
             self.data['controller_required_probabilities'][controller_ind] = {}
 
     def update_training_steps(self, training_steps):
+        """
+        Update the total number of elapsed training steps of the overall system.
+
+        Inputs
+        ------
+        training_steps : int
+            The number of elapsed training steps since the LAST call of update_training_steps()
+        """
         if self.data['cparl_loop_training_steps']:
             elapsed_training_steps = self.data['cparl_loop_training_steps'][-1]
         else:
@@ -68,6 +102,14 @@ class Results(object):
         self.data['cparl_loop_training_steps'].append(elapsed_training_steps + training_steps)
 
     def update_controllers(self, controller_list):
+        """
+        Use the controller list to update results data pertaining to the sub-systems.
+
+        Inputs
+        ------
+        controller_list : list
+            List of MinigridController objects whose results data is to be updated.
+        """
         elapsed_training_steps = self.data['cparl_loop_training_steps'][-1]
         for controller in controller_list:
             controller_ind = controller.controller_ind
@@ -77,6 +119,20 @@ class Results(object):
             self.data['controller_required_probabilities'][controller_ind][elapsed_training_steps] = controller.data['required_success_prob']
 
     def update_composition_data(self, rollout_mean, num_rollouts, policy, predicted_success_prob):
+        """
+        Update the data pertaining to the compostional system's performance.
+
+        Inputs
+        ------
+        rollout_mean : float
+            Empirically estimated probability of the composite system's task success.
+        num_rollouts : int
+            Number of system rollouts used to estimate the rollout_mean.
+        policy : numpy array
+            The meta-policy specifying the composite system.
+        predicted_success_prob : float
+            The HLM's predicted probability of task success.
+        """
         elapsed_training_steps = self.data['cparl_loop_training_steps'][-1]
         self.data['composition_rollout_mean'][elapsed_training_steps] = rollout_mean
         self.data['composition_num_rollouts'][elapsed_training_steps] = num_rollouts
@@ -109,7 +165,6 @@ class Results(object):
         save_dir : string
             Absolute path to the directory that will be used to save this results data.
         """
-
         data_file = os.path.join(save_dir, 'results_data.p')
         with open(data_file, 'rb') as pickleFile:
             results_data = pickle.load(pickleFile)

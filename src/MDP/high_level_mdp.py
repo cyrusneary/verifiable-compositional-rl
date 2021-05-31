@@ -7,7 +7,18 @@ class HLMDP(object):
     """
 
     def __init__(self, init_states, goal_states, controller_list):
-
+        """
+        Inputs
+        ------
+        init_states : list
+            List of tuples representing the possible initial states of the system.
+        goal_states : list
+            List of tuples representing the target goal states of the system.
+        controller_list : list
+            List of MinigridController objects (the sub-systems being used as components 
+            of the overall RL system).
+        """
+        
         self.init_states = init_states
         self.goal_states = goal_states        
         self.controller_list = controller_list
@@ -303,195 +314,33 @@ class HLMDP(object):
 
         return policy, reach_prob, feasible_flag
 
-
-    def solve_low_level_requirements(self, prob_threshold, max_timesteps_per_component=None, action_independence=True):
+    def solve_low_level_requirements_action(self, prob_threshold, max_timesteps_per_component=None):
         """
         Find new transition probabilities guaranteeing that a feasible meta-policy exists.
-        :param prob_threshold: probability of sastisfying the spec
-        :type prob_threshold: float
-        :param action_independence: flag whether actions are independent or not
-        :type action_independence: boolean
 
-        outputs:
+        Inputs
+        ------
+        prob_threshold : float
+            The required probability of reaching the target set in the HLM.
+        max_timesteps_per_component : int
+            Number of training steps (for an individual sub-system) beyond which its current
+            estimated performance value should be used as an upper bound on the corresponding
+            transition probability in the HLM.
 
-        """
-        if prob_threshold>1 or prob_threshold<0:
-            raise RuntimeError("prob threshold is not a probability")
-
-        #initialize gurobi model
-        bilinear_model=Model("abs_mdp_bilinear")
-
-        #activate gurobi nonconvex
-        bilinear_model.params.NonConvex = 2
-
-        #dictionary for state action occupancy
-        state_act_vars = dict()
-
-        #dictionary for MDP prob variables
-        MDP_prob_vars = dict()
-
-        #dictionary for slack variables
-        slack_prob_vars=dict()
-
-        #dictionary for epigraph variables used to define objective
-        MDP_prob_diff_maximizers = dict()
-
-        #dummy action for goal state
-        self.avail_actions[self.s_g]=[0]
-
-        #create occupancy measures, probability variables and reward variables
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                state_act_vars[s,a] = bilinear_model.addVar(lb=0,name="state_act_"+str(s)+"_"+str(a))
-                MDP_prob_vars[s,a] = bilinear_model.addVar(lb=0,ub=1,name="mdp_prob_"+str(s)+"_"+str(a))
-                slack_prob_vars[s,a] = bilinear_model.addVar(lb=0,ub=1,name="slack_"+str(s)+"_"+str(a))
-
-                MDP_prob_diff_maximizers[s,a] = bilinear_model.addVar(lb=0,name='mdp_prob_difference_maximizer'+str(s)+"_"+str(a))
-
-        # #epigraph variable for max probability constraint
-        # prob_maximizer = bilinear_model.addVar(lb=0, name="prob_maximizer")
-
-        #gurobi updates model
-        bilinear_model.update()
-
-        #MDP bellman or occupancy constraints for each state
-        for s in self.S:
-            cons=0
-            #add outgoing occupancy for available actions
-
-            for a in self.avail_actions[s]:
-                cons+=state_act_vars[s,a]
-
-            #add ingoing occupancy for predecessor state actions
-            for s_bar, a_bar in self.predecessors[s]:
-                #this if clause ensures that you dont double count reaching goal and failure
-                if not s_bar == self.s_g and not s_bar == self.s_fail:
-                    cons -= state_act_vars[s_bar, a_bar] * MDP_prob_vars[s_bar, a_bar]
-            #initial state occupancy
-            if s == self.s_i:
-                cons=cons-1
-
-            #sets occupancy constraints
-            bilinear_model.addConstr(cons==0)
-
-        # prob threshold constraint
-        for s in self.S:
-            if s==self.s_g:
-                bilinear_model.addConstr(state_act_vars[s,0]>=prob_threshold)
-        print("opt")
-        if action_independence:
-            for a in self.A:
-
-                if len(self.avail_states[a]) > 1:
-                    for s in range(1,len(self.avail_states[a])):
-                        # way to add constraints if there multiple elements in self.avail_states[a]
-                        bilinear_model.addConstr(self.avail_states[a][s]==self.avail_states[a][s-1])
-
-        # For each low-level component, add constraints corresponding to
-        # the existing performance.
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                existing_success_prob = np.copy(self.controller_list[a].get_success_prob())
-                assert(existing_success_prob>=0 and existing_success_prob<=1)
-                bilinear_model.addConstr(MDP_prob_vars[s,a] >= existing_success_prob)
-        
-        # If one of the components exceeds the maximum allowable training steps, upper bound its success probability.
-        if max_timesteps_per_component:
-            for s in self.S:
-                for a in self.avail_actions[s]:
-                    if self.controller_list[a].data['total_training_steps'] >= max_timesteps_per_component:
-                        existing_success_prob = np.copy(self.controller_list[a].get_success_prob())
-                        assert(existing_success_prob>=0 and existing_success_prob<=1)
-                        print('Controller {}, max success prob: {}'.format(a, existing_success_prob))
-                        bilinear_model.addConstr(MDP_prob_vars[s,a] <= existing_success_prob + slack_prob_vars[s,a])
-
-        # set up the objective
-        obj=0
-
-        slack_cons = 1e3
-        # # Minimize the sum of success probability lower bounds
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         obj+=MDP_prob_vars[s, a]
-
-        # Minimize the sum of differences between probability objective and empirical achieved probabilities
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                bilinear_model.addConstr(MDP_prob_diff_maximizers[s,a] >= MDP_prob_vars[s,a] - self.controller_list[a].get_success_prob())
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                obj += MDP_prob_diff_maximizers[s,a]
-                obj += slack_cons * slack_prob_vars[s,a]
-        
-        # # Minimize the maximum success probability lower bound
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         bilinear_model.addConstr(MDP_prob_vars[s,a]<=prob_maximizer)
-        # obj += prob_maximizer
-
-        #set the objective, solve the problem
-        bilinear_model.setObjective(obj,GRB.MINIMIZE)
-        bilinear_model.optimize()
-
-        if bilinear_model.SolCount == 0:
-            feasible_flag = False
-        else:
-            feasible_flag = True
-
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                if slack_prob_vars[s,a].x>1e-6:
-                    print("required slack value {} at state {} and action: {} ".format(slack_prob_vars[s,a].x,s,a))
-
-        if feasible_flag:
-            # Update the requirements for the individual components
-            required_success_probs = {}
-            for s in self.S:
-                for a in self.avail_actions[s]:
-                    if a not in required_success_probs.keys():
-                        required_success_probs[a] = []
-                    required_success_probs[a].append(np.copy(MDP_prob_vars[s,a].x))
-            for a in self.A:
-                self.controller_list[a].data['required_success_prob'] = np.max(required_success_probs[a])
-
-            # Create a list of the required success probabilities of each of the components
-            required_success_probs = [[MDP_prob_vars[s,a].x for a in self.avail_actions[s]] for s in self.S]
-
-            # Save the probability of reaching the goal state under the solution
-            reach_prob = state_act_vars[self.s_g, 0].x
-
-            # Construct the policy from the occupancy variables
-            policy = np.zeros((self.N_S, self.N_A), dtype=np.float)
-            for s in self.S:
-                if len(self.avail_actions[s]) == 0:
-                    policy[s, :] = -1 # If no actions are available, return garbage value
-                else:
-                    occupancy_state = np.sum([state_act_vars[s,a].x for a in self.avail_actions[s]])
-                    # If the state has no occupancy measure under the solution, set the policy to 
-                    # be uniform over available actions
-                    if occupancy_state == 0.0:
-                        for a in self.avail_actions[s]:
-                            policy[s,a] = 1 / len(self.avail_actions[s])
-                    if occupancy_state > 0.0:
-                        for a in self.avail_actions[s]:
-                            policy[s, a] = state_act_vars[s,a].x / occupancy_state
-        else:
-            policy = -1 * np.ones((self.N_S, self.N_A), dtype=np.float)
-            required_success_probs = [[-1 for a in self.avail_actions[s]] for s in self.S]
-            reach_prob = -1
-
-        return policy, required_success_probs, reach_prob, feasible_flag
-
-    def solve_low_level_requirements_action(self, prob_threshold, max_timesteps_per_component=None, action_independence=True):
-        """
-        Find new transition probabilities guaranteeing that a feasible meta-policy exists.
-        :param prob_threshold: probability of sastisfying the spec
-        :type prob_threshold: float
-        :param action_independence: flag whether actions are independent or not
-        :type action_independence: boolean
-
-        outputs:
-
+        Outputs
+        -------
+        policy : numpy array
+            The meta-policy satisfying the task specification, under the solution
+            transition probabilities in the HLM.
+            Returns an array of -1 if no feasible solution exists.
+        required_success_probs : list
+            List of the solution transition probabilities in the HLM.
+            Returns a list of -1 if no feasible solution exists.
+        reach_prob : float
+            The HLM predicted probability of reaching the target set under the solution
+            meta-policy and solution transition probabilities in the HLM.
+        feasibility_flag : bool
+            Flag indicating the feasibility of the bilinear program being solved.
         """
         if prob_threshold > 1 or prob_threshold < 0:
             raise RuntimeError("prob threshold is not a probability")
@@ -560,13 +409,6 @@ class HLMDP(object):
             if s == self.s_g:
                 bilinear_model.addConstr(state_act_vars[s, 0] >= prob_threshold)
         print("opt")
-        # if action_independence:
-        #     for a in self.A:
-        #
-        #         if len(self.avail_states[a]) > 1:
-        #             for s in range(1, len(self.avail_states[a])):
-        #                 # way to add constraints if there multiple elements in self.avail_states[a]
-        #                 bilinear_model.addConstr(self.avail_states[a][s] == self.avail_states[a][s - 1])
 
         # For each low-level component, add constraints corresponding to
         # the existing performance.
@@ -594,22 +436,11 @@ class HLMDP(object):
         for a in self.A:
             obj += MDP_prob_diff_maximizers[ a]
             obj += slack_cons * slack_prob_vars[a]
-        # # Minimize the sum of success probability lower bounds
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         obj+=MDP_prob_vars[s, a]
 
         # Minimize the sum of differences between probability objective and empirical achieved probabilities
         for a in self.A:
             bilinear_model.addConstr(
                 MDP_prob_diff_maximizers[a] >= MDP_prob_vars[a] - self.controller_list[a].get_success_prob())
-
-
-        # # Minimize the maximum success probability lower bound
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         bilinear_model.addConstr(MDP_prob_vars[s,a]<=prob_maximizer)
-        # obj += prob_maximizer
 
         # set the objective, solve the problem
         bilinear_model.setObjective(obj, GRB.MINIMIZE)
@@ -658,160 +489,6 @@ class HLMDP(object):
         else:
             policy = -1 * np.ones((self.N_S, self.N_A), dtype=np.float)
             required_success_probs = [[-1 for a in self.avail_actions[s]] for s in self.S]
-            reach_prob = -1
-
-        return policy, required_success_probs, reach_prob, feasible_flag
-
-    def solve_low_level_requirements2(self, prob_threshold, max_timesteps_per_component=None, action_independence=True):
-        """
-        Find new transition probabilities guaranteeing that a feasible meta-policy exists.
-        :param prob_threshold: probability of sastisfying the spec
-        :type prob_threshold: float
-        :param action_independence: flag whether actions are independent or not
-        :type action_independence: boolean
-
-        outputs:
-
-        """
-        if prob_threshold>1 or prob_threshold<0:
-            raise RuntimeError("prob threshold is not a probability")
-
-        #initialize gurobi model
-        bilinear_model=Model("abs_mdp_bilinear")
-
-        #activate gurobi nonconvex
-        bilinear_model.params.NonConvex = 2
-
-        #dictionary for state action occupancy
-        state_act_vars = dict()
-
-        #dictionary for MDP prob variables
-        MDP_prob_vars = dict()
-
-        #dictionary for epigraph variables used to define objective
-        MDP_prob_diff_maximizers = dict()
-
-        #dummy action for goal state
-        self.avail_actions[self.s_g]=[0]
-
-        #create occupancy measures, probability variables and reward variables
-        for s in self.S:
-            for a in self.avail_actions[s]:
-                state_act_vars[s,a] = bilinear_model.addVar(lb=0,name="state_act_"+str(s)+"_"+str(a))
-
-        for a in self.A:
-            MDP_prob_vars[a] = bilinear_model.addVar(lb=0,ub=1,name="mdp_prob_"+str(a))
-            MDP_prob_diff_maximizers[a] = bilinear_model.addVar(lb=0,name='mdp_prob_difference_maximizer'+str(a))
-
-        # #epigraph variable for max probability constraint
-        # prob_maximizer = bilinear_model.addVar(lb=0, name="prob_maximizer")
-
-        #gurobi updates model
-        bilinear_model.update()
-
-        #MDP bellman or occupancy constraints for each state
-        for s in self.S:
-            cons=0
-            #add outgoing occupancy for available actions
-
-            for a in self.avail_actions[s]:
-                cons+=state_act_vars[s,a]
-
-            #add ingoing occupancy for predecessor state actions
-            for s_bar, a_bar in self.predecessors[s]:
-                #this if clause ensures that you dont double count reaching goal and failure
-                if not s_bar == self.s_g and not s_bar == self.s_fail:
-                    cons -= state_act_vars[s_bar, a_bar] * MDP_prob_vars[a_bar]
-            #initial state occupancy
-            if s == self.s_i:
-                cons=cons-1
-
-            #sets occupancy constraints
-            bilinear_model.addConstr(cons==0)
-
-        # prob threshold constraint
-        for s in self.S:
-            if s==self.s_g:
-                bilinear_model.addConstr(state_act_vars[s,0]>=prob_threshold)
-        print("opt")
-        if action_independence:
-            for a in self.A:
-
-                if len(self.avail_states[a]) > 1:
-                    for s in range(1,len(self.avail_states[a])):
-                        # way to add constraints if there multiple elements in self.avail_states[a]
-                        bilinear_model.addConstr(self.avail_states[a][s]==self.avail_states[a][s-1])
-
-        # If one of the components exceeds the maximum allowable training steps, fix its achieved probability of success.
-        if max_timesteps_per_component:
-            for a in self.A:
-                if self.controller_list[a].data['total_training_steps'] >= max_timesteps_per_component:
-                    bilinear_model.addConstr(MDP_prob_vars[a] <= self.controller_list[a].get_success_prob())
-
-        # set up the objective
-        obj=0
-
-        # # Minimize the sum of success probability lower bounds
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         obj+=MDP_prob_vars[s, a]
-
-        # Minimize the sum of differences between probability objective and empirical achieved probabilities
-        for a in self.A:
-            bilinear_model.addConstr(MDP_prob_diff_maximizers[a] >= MDP_prob_vars[a] - self.controller_list[a].get_success_prob())
-        for a in self.A:
-            obj += MDP_prob_diff_maximizers[a]
-        
-        # # Minimize the maximum success probability lower bound
-        # for s in self.S:
-        #     for a in self.avail_actions[s]:
-        #         bilinear_model.addConstr(MDP_prob_vars[s,a]<=prob_maximizer)
-        # obj += prob_maximizer
-
-        # For each low-level component, add constraints corresponding to
-        # the existing performance.
-        for a in self.A:
-            existing_success_prob = np.copy(self.controller_list[a].get_success_prob())
-            assert(existing_success_prob>=0 and existing_success_prob<=1)
-            bilinear_model.addConstr(MDP_prob_vars[a] >= existing_success_prob)
-
-        #set the objective, solve the problem
-        bilinear_model.setObjective(obj,GRB.MINIMIZE)
-        bilinear_model.optimize()
-
-        if bilinear_model.SolCount == 0:
-            feasible_flag = False
-        else:
-            feasible_flag = True
-
-        if feasible_flag:
-            # Update the requirements for the individual components
-            required_success_probs = []
-            for a in self.A:
-                required_success_probs.append(MDP_prob_vars[a].x)
-
-            # Save the probability of reaching the goal state under the solution
-            reach_prob = state_act_vars[self.s_g, 0].x
-
-            # Construct the policy from the occupancy variables
-            policy = np.zeros((self.N_S, self.N_A), dtype=np.float)
-            for s in self.S:
-                if len(self.avail_actions[s]) == 0:
-                    policy[s, :] = -1 # If no actions are available, return garbage value
-                else:
-                    occupancy_state = np.sum([state_act_vars[s,a].x for a in self.avail_actions[s]])
-                    # If the state has no occupancy measure under the solution, set the policy to 
-                    # be uniform over available actions
-                    if occupancy_state == 0.0:
-                        for a in self.avail_actions[s]:
-                            policy[s,a] = 1 / len(self.avail_actions[s])
-                    if occupancy_state > 0.0:
-                        for a in self.avail_actions[s]:
-                            policy[s, a] = state_act_vars[s,a].x / occupancy_state
-        else:
-            policy = -1 * np.ones((self.N_S, self.N_A), dtype=np.float)
-            required_success_probs = [-1 for a in self.A]
-            # [[-1 for a in self.avail_actions[s]] for s in self.S]
             reach_prob = -1
 
         return policy, required_success_probs, reach_prob, feasible_flag

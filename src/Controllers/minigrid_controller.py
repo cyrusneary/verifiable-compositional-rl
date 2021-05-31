@@ -23,11 +23,7 @@ class MiniGridController(object):
 
         self.data = {
             'total_training_steps' : 0,
-            # 'rollout_successes' : {},
             'performance_estimates' : {},
-            # 'success_rate' : 0,
-            # 'num_trials' : 0,
-            # 'avg_num_steps' : 0,
             'required_success_prob' : 0,
         }
 
@@ -41,10 +37,29 @@ class MiniGridController(object):
             self.load(load_dir)
 
     def learn(self, total_timesteps=5e4):
+        """
+        Train the sub-system for a specified number of timesteps.
+
+        Inputs
+        ------
+        total_timesteps : int
+            Total number of timesteps to train the sub-system for.
+        """
         self.model.learn(total_timesteps=total_timesteps)
         self.data['total_training_steps'] = self.data['total_training_steps'] + total_timesteps
 
     def predict(self, obs, deterministic=True):
+        """
+        Get the sub-system's action, given the current environment observation (state)
+
+        Inputs
+        ------
+        obs : tuple
+            Tuple representing the current environment observation (state).
+        deterministic (optional) : bool
+            Flag indicating whether or not to return a deterministic action or a distribution
+            over actions.
+        """
         action, _states = self.model.predict(obs, deterministic=deterministic)
         return action, _states
 
@@ -172,10 +187,8 @@ class MiniGridController(object):
         # Return the most recently estimated probability of success
         max_total_training_steps = np.max(list(self.data['performance_estimates'].keys()))
         return np.copy(self.data['performance_estimates'][max_total_training_steps]['success_rate'])
-        # return np.copy(self.data['success_rate'])
 
     def _set_training_env(self, env_settings):
-        # self.training_env = MazeLongWayAround(**env_settings)
         self.training_env = Maze(**env_settings)
         self.training_env.agent_start_states = self.init_states
         self.training_env.goal_states = self.final_states
