@@ -1,24 +1,23 @@
 # Verifiable Compositional Reinforcement Learning Systems
 
-This code implements a novel framework for verifiable and compositional reinforcement learning systems.
+This code implements a novel framework for verifiable and compositional reinforcement learning systems. The associated paper can be found here: [https://arxiv.org/abs/2106.05864](https://arxiv.org/abs/2106.05864).
 
 ## Installation
 
 To run the code, Python 3.8 is required with the following packages:
 
-    - matplotlib
-    - numpy
-    - pickle
-    - gurobipy (https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html)
-    - gym_minigrid (https://github.com/maximecb/gym-minigrid)
-    - gym (https://github.com/openai/gym)
-    - stable_baselines3 (https://github.com/DLR-RM/stable-baselines3)
-        - pytorch (https://pytorch.org/get-started/locally/)
-            - Note: pytorch will be installed automatically by stable_baselines3
-            if you do not already have it installed.
+- matplotlib
+- numpy
+- pickle
+- gurobipy [https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html](https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html)
+- gym_minigrid [https://github.com/maximecb/gym-minigrid](https://github.com/maximecb/gym-minigrid)
+- gym [https://github.com/openai/gym](https://github.com/openai/gym)
+- stable_baselines3 [https://github.com/DLR-RM/stable-baselines3](https://github.com/DLR-RM/stable-baselines3)
+- pytorch [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+     - Note: pytorch will be installed automatically by stable_baselines3 if you do not already have it installed.
 
-Gurobi optimization software is also necessary. This can be downloaded from (https://www.gurobi.com/downloads/).
-Academic Gurobi licenses may be requested from (https://www.gurobi.com/downloads/end-user-license-agreement-academic/).
+Gurobi optimization software is also necessary. This can be downloaded from [https://www.gurobi.com/downloads/](https://www.gurobi.com/downloads/).
+Academic Gurobi licenses may be requested from [https://www.gurobi.com/downloads/end-user-license-agreement-academic/](https://www.gurobi.com/downloads/end-user-license-agreement-academic/).
 
 ## Running examples
 
