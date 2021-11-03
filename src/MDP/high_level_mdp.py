@@ -127,19 +127,20 @@ class HLMDP(object):
 
     def solve_feasible_policy(self, prob_threshold):
         """
-        If a meta-policy exists that reaches the goal state from the target state with probability above
-        the specified threshold, return it.
+        If a meta-policy exists that reaches the goal state from the target 
+        state with probability above the specified threshold, return it.
 
         Inputs
         ------
         prob_threshold : float
-            Value between 0 and 1 that represents the desired probability of reaching the goal.
+            Value between 0 and 1 that represents the desired probability of 
+            reaching the goal.
 
         Outputs
         -------
         policy : numpy (N_S, N_A) array
-            Array representing the solution policy. If there is no feasible solution, an array of
-            -1 is returned.
+            Array representing the solution policy. If there is no feasible 
+            solution, an array of -1 is returned.
         feasible_flag : bool
             Flag indicating whether or not a feasible solution was found.
         """
@@ -162,7 +163,8 @@ class HLMDP(object):
         #create occupancy measures, probability variables and reward variables
         for s in self.S:
             for a in avail_actions[s]:
-                state_act_vars[s,a]=linear_model.addVar(lb=0,name="state_act_"+str(s)+"_"+str(a))
+                state_act_vars[s,a]=linear_model.addVar(lb=0, 
+                                        name="state_act_"+str(s)+"_"+str(a))
 
         #gurobi updates model
         linear_model.update()
@@ -283,7 +285,7 @@ class HLMDP(object):
         obj+= state_act_vars[self.s_g, 0] # Probability of reaching goal state
 
         #set the objective, solve the problem
-        linear_model.setObjective(obj,GRB.MAXIMIZE)
+        linear_model.setObjective(obj, GRB.MAXIMIZE)
         linear_model.optimize()
 
         if linear_model.SolCount == 0:
