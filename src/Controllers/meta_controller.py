@@ -28,7 +28,8 @@ class MetaController(object):
 
     def obs_mapping(self, obs):
         """
-        Map from an environment observation (state) to the corresponding high-level state.
+        Map from an environment observation (state) to the corresponding 
+        high-level state.
 
         Inputs
         ------
