@@ -11,12 +11,13 @@ from utils.results_saver import Results
 import tikzplotlib
 
 # %%
-load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
-
-experiment_name = 'minigrid_labyrinth'
+# load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
+# experiment_name = 'minigrid_labyrinth'
+load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+experiment_name = 'unity_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
-string_ind = base_path.find('/src')
+string_ind = base_path.find('src')
 assert(string_ind >= 0)
 base_path = base_path[0:string_ind + 4]
 base_path = os.path.join(base_path, 'data', 'saved_controllers')
@@ -83,12 +84,12 @@ ax.legend(fontsize=15)
 yl = ax.get_ylim()
 ax.set_ylim(yl)
 
-ax.plot([0.8e6, 0.8e6], [yl[0],yl[1]],
+ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
         color='red',
         linewidth=large_linewidth*2,
         linestyle='--')
 
-save_path = os.path.join(os.path.curdir, 'figures', 'training_curves.tex')
+save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_curves.tex')
 tikzplotlib.save(save_path)
 
 
