@@ -33,9 +33,10 @@ class MetaController(object):
         self.successor = hlmdp.successor
 
         self.s_i = hlmdp.s_i
+        self.s_g = hlmdp.s_g
         side_channels['custom_side_channel'].subscribe(self)
 
-        self.reset()
+        self.reset(side_channels)
 
     def notify(self, observable: CustomSideChannel, message: str):
         """
@@ -57,18 +58,23 @@ class MetaController(object):
                 self.successor[(self.current_abstract_state, 
                                 self.current_controller_ind)]
 
-            # Get the next abstract action to take
-            self.current_controller_ind = \
-                self.select_next_abstract_action(self.current_abstract_state)
+            if not(self.current_abstract_state == self.s_g):
+                # Get the next abstract action to take
+                self.current_controller_ind = \
+                    self.select_next_abstract_action(self.current_abstract_state)
 
-            observable.send_string('-1,{}'.format(self.current_controller_ind))
+                observable.send_string('-1,{}'.format(self.current_controller_ind))
+                # print('Current controller: {}'.format(self.current_controller_ind))
 
         elif message == 'Failed task':
             pass
         elif message == 'Completed task':
             pass
+        elif message == '':
+            pass
         else:
-            raise Exception('Unexpected message received from unity environment.')
+            pass
+            # raise Exception('Unexpected message received from unity environment.')
 
     def unsubscribe_meta_controller(self, side_channels: dict):
         """
@@ -83,10 +89,12 @@ class MetaController(object):
         """
         side_channels['custom_side_channel'].unsubscribe(self)
 
-    def reset(self):
+    def reset(self, side_channels):
         self.current_abstract_state = self.s_i
         self.current_controller_ind = self.select_next_abstract_action(
                                             self.current_abstract_state)
+        side_channels['custom_side_channel'].send_string('-1,{}'.format(self.current_controller_ind))
+        # print('Current controller: {}'.format(self.current_controller_ind))
 
     def select_next_abstract_action(self, abstract_state):
         """
@@ -159,7 +167,7 @@ class MetaController(object):
             avg_num_steps = (avg_num_steps + num_steps) / 2
 
             obs = env.reset()
-            self.reset()
+            self.reset(side_channels)
 
             num_steps = 0
             for step_ind in range(n_steps):
@@ -208,12 +216,10 @@ class MetaController(object):
 
         for episode_ind in range(n_episodes):
             obs = env.reset()
-            self.reset()
+            self.reset(side_channels)
             for step in range(n_steps):
                 action, _states = self.predict(obs, deterministic=True)
                 obs, reward, done, info = env.step(action)
-                if render:
-                    env.render(highlight=False)
                 if done:
                     break
 

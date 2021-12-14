@@ -35,7 +35,7 @@ class UnityLabyrinthController(object):
             assert env_settings is not None
             self._init_learning_alg(env, verbose=self.verbose)
         else:
-            self.load(load_dir, env)
+            self.load(env, load_dir)
 
     def learn(self, side_channel, total_timesteps=5e4):
         """
@@ -247,8 +247,6 @@ class UnityLabyrinthController(object):
             for step in range(n_steps):
                 action, _states = self.model.predict(obs, deterministic=True)
                 obs, reward, done, info = env.step(action)
-                if render:
-                    env.render(highlight=False)
                 if done:
                     break
 
