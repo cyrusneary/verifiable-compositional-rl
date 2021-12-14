@@ -23,14 +23,14 @@ side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
 
 prob_threshold = 0.95 # Desired probability of reaching the final goal
-training_iters = 5e2 # 5e4
-num_rollouts = 1 # 100
-n_steps_per_rollout = 500
-max_timesteps_per_component = 5e5
+training_iters = 5e4 # 5e4
+num_rollouts = 1000 # 100
+n_steps_per_rollout = 50
+meta_controller_n_steps_per_rollout = 5 * n_steps_per_rollout
+max_timesteps_per_component = 2e5
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
-
 load_folder_name = ''
 save_learned_controllers = True
 
@@ -98,6 +98,8 @@ np.random.seed(rseed)
 
 print('Random seed: {}'.format(results.data['random_seed']))
 
+# %%
+
 for controller_ind in range(len(controller_list)):
     controller = controller_list[controller_ind]
     # Evaluate initial performance of controllers (they haven't learned 
@@ -151,7 +153,7 @@ meta_controller = MetaController(policy, hlmdp, side_channels)
 meta_success_rate = meta_controller.eval_performance(env,
                                                     side_channels,
                                                     n_episodes=num_rollouts, 
-                                                    n_steps=n_steps_per_rollout)
+                                                    n_steps=meta_controller_n_steps_per_rollout)
 meta_controller.unsubscribe_meta_controller(side_channels)
 
 # Save the results
@@ -221,7 +223,7 @@ while reach_prob < prob_threshold:
     meta_success_rate = meta_controller.eval_performance(env,
                                                         side_channels, 
                                                         n_episodes=num_rollouts, 
-                                                        n_steps=n_steps_per_rollout)
+                                                        n_steps=meta_controller_n_steps_per_rollout)
     meta_controller.unsubscribe_meta_controller(side_channels)
 
     # Save results
@@ -229,7 +231,8 @@ while reach_prob < prob_threshold:
     results.update_controllers(hlmdp.controller_list)
     results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
     results.save(save_path)
-
+    
+    print('Predicted success prob: {}, Empirical success prob: {}'.format(reach_prob, meta_success_rate))
 # %% Once the loop has been completed, construct a meta-controller and visualize its performance
 
 meta_controller = MetaController(policy, hlmdp, side_channels)
@@ -237,17 +240,19 @@ print('evaluating performance of meta controller')
 meta_success_rate = meta_controller.eval_performance(env,
                                                     side_channels,
                                                     n_episodes=num_rollouts, 
-                                                    n_steps=n_steps_per_rollout)
+                                                    n_steps=meta_controller_n_steps_per_rollout)
 meta_controller.unsubscribe_meta_controller(side_channels)
 print('Predicted success prob: {}, \
     empirically measured success prob: {}'.format(reach_prob, meta_success_rate))
 
+# %%
 n_episodes = 5
-n_steps_per_rollout = 1000
 render = True
+meta_controller = MetaController(policy, hlmdp, side_channels)
 meta_controller.demonstrate_capabilities(env, 
                                         side_channels,
                                         n_episodes=n_episodes, 
-                                        n_steps=n_steps_per_rollout, 
+                                        n_steps=meta_controller_n_steps_per_rollout, 
                                         render=render)
 meta_controller.unsubscribe_meta_controller(side_channels)
+# %%
