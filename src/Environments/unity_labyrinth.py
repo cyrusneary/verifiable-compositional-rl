@@ -39,9 +39,10 @@ class CustomSideChannel(SideChannel):
         Note: We must implement this method of the SideChannel interface to
         receive messages from Unity
         """
+        message_string = msg.read_string()
         # Pass the message on to all subscribed observers
         for obs in self._observers:
-            obs.notify(self, msg.read_string())
+            obs.notify(self, message_string)
         # # We simply read a string from the message and print it.
         # print(msg.read_string())
 
