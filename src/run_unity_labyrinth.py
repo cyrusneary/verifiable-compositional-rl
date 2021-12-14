@@ -83,6 +83,8 @@ if load_folder_name == '':
                         prob_threshold, 
                         training_iters, 
                         num_rollouts, 
+                        n_steps_per_rollout,
+                        meta_controller_n_steps_per_rollout,
                         random_seed=rseed)
 else:
     results = Results(load_dir=load_dir)

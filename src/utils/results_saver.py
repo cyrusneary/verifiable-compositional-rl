@@ -13,6 +13,8 @@ class Results(object):
                 prob_threshold=None, 
                 training_iters=None, 
                 estimation_rollouts=None,
+                n_steps_per_rollout=None,
+                n_steps_per_meta_rollout=None,
                 random_seed=None, 
                 load_dir=None):
         """
@@ -34,6 +36,10 @@ class Results(object):
         estimation_rollouts (optional) : int
             The number of rollouts to use when empirically estimating
             (sub-)task success probabilities.
+        n_steps_per_rollout (optional) : int
+            The number of steps to use per rollout of a sub-system.
+        n_steps_per_meta_rollout (optional) : int
+            The number of steps to use per rollout of a composite system.
         random_seed (optional) : int
             Random seed used in the experiment.
         load_dir (optional) : str
@@ -47,12 +53,16 @@ class Results(object):
             assert(prob_threshold is not None)
             assert(training_iters is not None)
             assert(estimation_rollouts is not None)
+            assert(n_steps_per_rollout is not None)
+            assert(n_steps_per_meta_rollout is not None)
             assert(random_seed is not None)
             self.data = {} # save everything in a dictionary
             self.data['env_settings'] = env_settings
             self.data['prob_threshold'] = prob_threshold
             self.data['training_iters'] = training_iters
             self.data['estimation_rollouts'] = estimation_rollouts
+            self.data['n_steps_per_rollout'] = n_steps_per_rollout
+            self.data['n_steps_per_meta_rollout'] = n_steps_per_meta_rollout
             self.data['random_seed'] = random_seed
 
             self.data['controller_elapsed_training_steps'] = {}

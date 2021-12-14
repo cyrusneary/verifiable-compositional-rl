@@ -25,6 +25,9 @@ training_iters = 5e4
 num_rollouts = 300
 max_timesteps_per_component = 5e5
 
+n_steps_per_rollout = 100
+meta_controller_n_steps_per_rollout = 200
+
 # %% Set the load directory (if loading pre-trained sub-systems) or create a new directory in which to save results
 
 load_folder_name = ''
@@ -33,7 +36,7 @@ save_learned_controllers = True
 experiment_name = 'minigrid_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
-string_ind = base_path.find('/src')
+string_ind = base_path.find('src')
 assert(string_ind >= 0)
 base_path = base_path[0:string_ind + 4]
 base_path = os.path.join(base_path, 'data', 'saved_controllers')
@@ -127,7 +130,14 @@ else:
 
 # %% Create or load object to store the results
 if load_folder_name == '':
-    results = Results(controller_list, env_settings, prob_threshold, training_iters, num_rollouts, random_seed=rseed)
+    results = Results(controller_list, 
+                        env_settings, 
+                        prob_threshold, 
+                        training_iters, 
+                        num_rollouts, 
+                        n_steps_per_rollout,
+                        meta_controller_n_steps_per_rollout,
+                        random_seed=rseed)
 else:
     results = Results(load_dir=load_dir)
     rseed = results.data['random_seed']
@@ -145,7 +155,7 @@ print('Random seed: {}'.format(results.data['random_seed']))
 for controller_ind in range(len(controller_list)):
     controller = controller_list[controller_ind]
     # Evaluate initial performance of controllers (they haven't learned anything yet so they will likely have no chance of success.)
-    controller.eval_performance(n_episodes=num_rollouts)
+    controller.eval_performance(n_episodes=num_rollouts, n_steps=n_steps_per_rollout)
     print('Controller {} achieved prob succes: {}'.format(controller_ind, controller.get_success_prob()))
 
     # Save learned controller
@@ -165,7 +175,7 @@ policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
 # Construct a meta-controller and emprirically evaluate it.
 meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
-meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=200)
+meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 
 # Save the results
 results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
@@ -201,7 +211,7 @@ while reach_prob < prob_threshold:
     print('Training controller {}'.format(largest_gap_ind))
     controller_to_train.learn(total_timesteps=total_timesteps)
     print('Completed training controller {}'.format(largest_gap_ind))
-    controller_to_train.eval_performance(n_episodes=num_rollouts)
+    controller_to_train.eval_performance(n_episodes=num_rollouts, n_steps=n_steps_per_rollout)
 
     # Save learned controller
     if save_learned_controllers:
@@ -215,7 +225,7 @@ while reach_prob < prob_threshold:
 
     # Construct a meta-controller with this policy and empirically evaluate its performance
     meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
-    meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=200)
+    meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 
     # Save results
     results.update_training_steps(total_timesteps)
@@ -227,7 +237,7 @@ while reach_prob < prob_threshold:
 
 meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
 print('evaluating performance of meta controller')
-meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=200)
+meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 print('Predicted success prob: {}, empirically measured success prob: {}'.format(reach_prob, meta_success_rate))
 
 n_episodes = 5
