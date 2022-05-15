@@ -1,12 +1,13 @@
 import numpy as np
-from gurobipy import *
+import gurobipy as gb
 
 class HLMDP(object):
     """
     Class representing the MDP model of the high-level decision making process.
     """
 
-    def __init__(self, S, A, s_i, s_g, s_fail, controller_list, successor_map):
+    def __init__(self, S, A, s_i, s_g, s_fail, 
+                    controller_list, successor_map, discount=1.0):
         """
         Inputs
         ------
@@ -26,6 +27,8 @@ class HLMDP(object):
         successor_map : dict
             Dictionary mapping high-level state-action pairs to the next
             high-level state. 
+        discount : float
+            The discount factor for the MDP.
         """     
         self.controller_list = controller_list
 
@@ -35,6 +38,7 @@ class HLMDP(object):
         self.s_i = s_i
         self.s_g = s_g
         self.s_fail = s_fail
+        self.discount = discount
 
         self.successor = successor_map
 
@@ -130,6 +134,38 @@ class HLMDP(object):
                     if self.successor[(sp, action)] == s:
                         self.predecessors[s].append((sp, action))
 
+    def process_high_level_demonstrations(self, demos : list) -> np.ndarray:
+        """
+        Process the high-level demonstrations into average expected 
+        discounted feature counts. The features currently just correspond
+        to state-action pairs.
+
+        Inputs
+        ------
+        demos :
+            A list of demonstration trajectories. demos[i] is a trajectory
+            and trajectory[t] is a state-action pair represented as a list.
+            stateAction[0] is the state at time t and stateAction[1] is the
+            action.
+
+        Outputs
+        -------
+        feature_counts :
+            The discounted average feature counts of the demonstrations.
+            feature_counts[i,j] is the count of action j in state i.
+        """
+        num_trajectories = len(demos)
+        feature_counts = np.zeros((self.N_S, self.N_A))
+        for i in range(num_trajectories):
+            traj = demos[i]
+            for t in range(len(traj)):
+                state, action = traj[t]
+                feature_counts[state, action] = \
+                    feature_counts[state, action] + self.discount**t
+        feature_counts = feature_counts / num_trajectories
+
+        return feature_counts
+
     def solve_feasible_policy(self, prob_threshold):
         """
         If a meta-policy exists that reaches the goal state from the target 
@@ -155,7 +191,7 @@ class HLMDP(object):
             raise RuntimeError("prob threshold is not a probability")
 
         #initialize gurobi model
-        linear_model = Model("abs_mdp_linear")
+        linear_model = gb.Model("abs_mdp_linear")
 
         #dictionary for state action occupancy
         state_act_vars=dict()
@@ -202,7 +238,7 @@ class HLMDP(object):
         obj=0
 
         #set the objective, solve the problem
-        linear_model.setObjective(obj,GRB.MINIMIZE)
+        linear_model.setObjective(obj, gb.GRB.MINIMIZE)
         linear_model.optimize()
 
         if linear_model.SolCount == 0:
@@ -248,7 +284,7 @@ class HLMDP(object):
         self.update_transition_function()
 
         #initialize gurobi model
-        linear_model = Model("abs_mdp_linear")
+        linear_model = gb.Model("abs_mdp_linear")
 
         #dictionary for state action occupancy
         state_act_vars=dict()
@@ -290,7 +326,7 @@ class HLMDP(object):
         obj+= state_act_vars[self.s_g, 0] # Probability of reaching goal state
 
         #set the objective, solve the problem
-        linear_model.setObjective(obj, GRB.MAXIMIZE)
+        linear_model.setObjective(obj, gb.GRB.MAXIMIZE)
         linear_model.optimize()
 
         if linear_model.SolCount == 0:
@@ -353,7 +389,7 @@ class HLMDP(object):
             raise RuntimeError("prob threshold is not a probability")
 
         # initialize gurobi model
-        bilinear_model = Model("abs_mdp_bilinear")
+        bilinear_model = gb.Model("abs_mdp_bilinear")
 
         # activate gurobi nonconvex
         bilinear_model.params.NonConvex = 2
@@ -450,7 +486,7 @@ class HLMDP(object):
                 MDP_prob_diff_maximizers[a] >= MDP_prob_vars[a] - self.controller_list[a].get_success_prob())
 
         # set the objective, solve the problem
-        bilinear_model.setObjective(obj, GRB.MINIMIZE)
+        bilinear_model.setObjective(obj, gb.GRB.MINIMIZE)
         bilinear_model.optimize()
 
         if bilinear_model.SolCount == 0:

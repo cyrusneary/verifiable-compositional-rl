@@ -8,15 +8,10 @@ def solve_optimistic_irl(mdp, feature_counts):
         pass
 
 def construct_optimistic_irl_forward_pass(mdp):
-    mdp.update_transition_function(optimistic=True)
-
-    ##### define the problem variables
-    # x = cp.Variable(shape=(mdp.N_S, mdp.N_A),
-    #                 name='x',
-    #                 nonneg=True)
-    
-    #dictionary for state action occupancy
+    #dictionary for state occupancy and state action occupancy
+    state_vars = dict()
     state_act_vars = dict()
+
     avail_actions = mdp.avail_actions.copy()
 
     #dummy action for goal state
@@ -24,11 +19,13 @@ def construct_optimistic_irl_forward_pass(mdp):
 
     #create occupancy measures, probability variables and reward variables
     for s in mdp.S:
+        state_vars[s] = cp.Variable(name="state_"+str(s), nonneg=True)
+
         for a in avail_actions[s]:
             state_act_vars[s, a] = cp.Variable(name="state_act_"+str(s)+"_"+str(a), 
                                                 nonneg=True)
-    
-    vars = [state_act_vars]
+
+    vars = [state_act_vars, state_vars]
 
     # Create problem parameters
     reward_vec = cp.Parameter(shape=(mdp.N_S, mdp.N_A), 
@@ -58,13 +55,18 @@ def construct_optimistic_irl_forward_pass(mdp):
         #sets occupancy constraints
         cons.append(cons_sum == 0)
 
+    for s in mdp.S:
+        cons_sum = cp.sum([state_act_vars[s,a] for a in avail_actions[s]])
+        cons.append(state_vars[s] == cons_sum)
+
     # set up the objective
     obj_sum = 0
 
     for s in mdp.S:
         x_state = cp.sum([state_act_vars[s, a] for a in avail_actions[s]])
         for a in avail_actions[s]:
-            obj_sum -= (cp.log(state_act_vars[s, a]) - cp.log(x_state)) * state_act_vars[s,a]
+            # obj_sum -= (cp.log(state_act_vars[s, a]) - cp.log(state_vars[s])) * state_act_vars[s,a]
+            obj_sum -= cp.rel_entr(state_act_vars[s,a], state_vars[s])
             obj_sum += reward_vec[s, a] * state_act_vars[s,a]
 
     obj = cp.Maximize(obj_sum)

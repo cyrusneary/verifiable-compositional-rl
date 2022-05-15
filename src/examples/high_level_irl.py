@@ -24,31 +24,23 @@ demo_str = os.path.join(demo_folder, demo_file_name)
 with open(demo_str, 'rb') as f:
     demonstrations = yaml.safe_load(f)['demonstrations']
 
-# Setup the high-level MDP object
-num_controllers = 12
-S = np.arange(-1, 11)
-A = np.arange(num_controllers)
-s_i = 0
-s_goal = 8
-s_fail = -1
+# Import the environment information
+env_info_folder = os.path.abspath('../Environments')
+env_info_file_name = 'unity_labyrinth.yaml'
+env_info_str = os.path.join(env_info_folder, env_info_file_name)
+with open(env_info_str, 'rb') as f:
+    env_info = yaml.safe_load(f)
 
-successor_map = {
-    (0,0) : 2,
-    (0,1) : 1,
-    (1,2) : 3,
-    (1,3) : 5,
-    (2,4) : 9,
-    (9,5) : 10,
-    (3,6) : 4,
-    (4,7) : 3,
-    (5,8) : 6,
-    (10,9): 8,
-    (6,10): 7,
-    (7,11): 8,
-}
+# Setup the high-level MDP object
+S = np.arange(-1, env_info['N_S'] - 1)
+A = np.arange(env_info['N_A'])
+successor_map = {}
+for key,val in env_info['successor_map'].items():
+    newkey = tuple(int(x) for x in key.strip('[]').split(','))
+    newval = val
+    successor_map[newkey] = newval
 
 # Setup and create the environment
-
 env_settings = {
     'time_scale' : 99.0,
 }
@@ -94,7 +86,7 @@ if save_learned_controllers and not os.path.isdir(save_path):
 controller_list = []
 
 if load_folder_name == '':
-    for i in range(12):
+    for i in range(env_info['N_A']):
         controller_list.append(UnityLabyrinthController(i, env, env_settings=env_settings))
 else:
     for controller_dir in os.listdir(load_dir):
@@ -151,29 +143,8 @@ results.update_training_steps(0)
 results.update_controllers(controller_list)
 results.save(save_path)
 
-# Construct high-level MDP and solve for the max reach probability
-S = np.arange(-1, 11)
-A = np.arange(len(controller_list))
-s_i = 0
-s_goal = 8
-s_fail = -1
-
-successor_map = {
-    (0,0) : 2,
-    (0,1) : 1,
-    (1,2) : 3,
-    (1,3) : 5,
-    (2,4) : 9,
-    (9,5) : 10,
-    (3,6) : 4,
-    (4,7) : 3,
-    (5,8) : 6,
-    (10,9): 8,
-    (6,10): 7,
-    (7,11): 8,
-}
-
-hlmdp = HLMDP(S, A, s_i, s_goal, s_fail, controller_list, successor_map, discount=0.9)
+hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], 
+                controller_list, successor_map, discount=0.9)
 
 feature_counts = hlmdp.process_high_level_demonstrations(demos=demonstrations)
 
@@ -185,8 +156,6 @@ reward_vec[3,6] = 1.0
 reward_vec[4,7] = 1.0
 
 params[0].value = reward_vec
-
-
 
 # policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
