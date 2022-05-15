@@ -2,6 +2,9 @@
 # Run the labyrinth navigation experiment.
 
 # %%
+import os, sys
+sys.path.append('..')
+
 from Environments.unity_labyrinth import build_unity_labyrinth_env
 import numpy as np
 from Controllers.unity_labyrinth_controller import UnityLabyrinthController

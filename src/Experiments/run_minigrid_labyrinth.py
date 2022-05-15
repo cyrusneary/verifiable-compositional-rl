@@ -2,6 +2,9 @@
 # Run the labyrinth navigation experiment.
 
 # %%
+import os, sys
+sys.path.append('..')
+
 from Environments.minigrid_labyrinth import Maze
 import numpy as np
 from Controllers.minigrid_controller import MiniGridController
