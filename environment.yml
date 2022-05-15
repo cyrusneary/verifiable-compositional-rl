@@ -16,3 +16,4 @@ dependencies:
     - stable-baselines3
     - mlagents==0.27.0
     - gym-unity
+    - cvxpy
