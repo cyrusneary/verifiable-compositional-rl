@@ -134,7 +134,7 @@ class HLMDP(object):
                     if self.successor[(sp, action)] == s:
                         self.predecessors[s].append((sp, action))
 
-    def process_high_level_demonstrations(self, demos : list) -> np.ndarray:
+    def process_high_level_demonstrations(self, demos : list) -> tuple:
         """
         Process the high-level demonstrations into average expected 
         discounted feature counts. The features currently just correspond
@@ -150,21 +150,28 @@ class HLMDP(object):
 
         Outputs
         -------
-        feature_counts :
+        state_features_counts : 
+            The discounted average feature counts of the demonstrations.
+            feature_counts[i] is the discounted count of state i.
+        state_act_feature_counts :
             The discounted average feature counts of the demonstrations.
             feature_counts[i,j] is the count of action j in state i.
         """
         num_trajectories = len(demos)
-        feature_counts = np.zeros((self.N_S, self.N_A))
+        state_act_feature_counts = np.zeros((self.N_S, self.N_A))
+        state_feature_counts = np.zeros(self.N_S)
         for i in range(num_trajectories):
             traj = demos[i]
             for t in range(len(traj)):
                 state, action = traj[t]
-                feature_counts[state, action] = \
-                    feature_counts[state, action] + self.discount**t
-        feature_counts = feature_counts / num_trajectories
+                state_feature_counts[state] = \
+                    state_feature_counts[state] + self.discount**t
+                state_act_feature_counts[state, action] = \
+                    state_act_feature_counts[state, action] + self.discount**t
+        state_act_feature_counts = state_act_feature_counts / num_trajectories
+        state_feature_counts = state_feature_counts / num_trajectories
 
-        return feature_counts
+        return state_feature_counts, state_act_feature_counts
 
     def solve_feasible_policy(self, prob_threshold):
         """
