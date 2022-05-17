@@ -146,16 +146,14 @@ results.save(save_path)
 hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], 
                 controller_list, successor_map, discount=0.9)
 
-feature_counts = hlmdp.process_high_level_demonstrations(demos=demonstrations)
+state_feature_counts, state_act_feature_counts = \
+    hlmdp.process_high_level_demonstrations(demos=demonstrations)
 
-high_level_irl_forward_pass, vars, params = \
-    construct_optimistic_irl_forward_pass(hlmdp)
+opt_problem = construct_optimistic_irl_forward_pass(hlmdp)
 
 reward_vec = np.zeros((hlmdp.N_S, hlmdp.N_A))
 reward_vec[3,6] = 1.0
 reward_vec[4,7] = 1.0
-
-params[0].value = reward_vec
 
 # policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
