@@ -3,7 +3,8 @@ sys.path.append('..')
 import numpy as np
 
 from MDP.general_high_level_mdp import HLMDP
-from optimization_problems.high_level_irl import construct_optimistic_irl_forward_pass
+from optimization_problems.high_level_irl_opt import solve_optimistic_irl
+from plotting.plot_irl_results import plot_irl_summary
 
 from Environments.unity_labyrinth import build_unity_labyrinth_env
 from Controllers.unity_labyrinth_controller import UnityLabyrinthController
@@ -118,7 +119,6 @@ else:
 torch.manual_seed(rseed)
 random.seed(rseed)
 np.random.seed(rseed)
-
 print('Random seed: {}'.format(results.data['random_seed']))
 
 for controller_ind in range(len(controller_list)):
@@ -144,18 +144,29 @@ results.update_controllers(controller_list)
 results.save(save_path)
 
 hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], 
-                controller_list, successor_map, discount=0.9)
+                controller_list, successor_map, discount=0.95)
 
 state_feature_counts, state_act_feature_counts = \
     hlmdp.process_high_level_demonstrations(demos=demonstrations)
 
-opt_problem = construct_optimistic_irl_forward_pass(hlmdp)
+irl_results = solve_optimistic_irl(hlmdp, state_act_feature_counts)
 
-reward_vec = np.zeros((hlmdp.N_S, hlmdp.N_A))
-reward_vec[3,6] = 1.0
-reward_vec[4,7] = 1.0
+plot_irl_summary(irl_results)
 
-# policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
+reward_vec = irl_results['theta_list'][-1]
+
+from optimization_problems.high_level_reward_opt import \
+    solve_low_level_requirements_action, solve_max_reward_perfect_subsystems
+
+# Solve for the maximum possible reward that can be achieved using perfect
+# subsystems
+policy, reward_max, feasibility_flat = \
+    solve_max_reward_perfect_subsystems(hlmdp, reward_vec)
+
+policy, required_success_probs, achieved_reward, feasibility_flat =\
+     solve_low_level_requirements_action(hlmdp, reward_vec, 0.1, reward_max)
+
+print(required_success_probs)
 
 # # Construct a meta-controller and emprirically evaluate it.
 # meta_controller = MetaController(policy, hlmdp, side_channels)

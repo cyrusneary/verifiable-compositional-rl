@@ -135,7 +135,7 @@ class MetaController(object):
 
         Inputs
         ------
-        env : Minigrid gym environment
+        env : environment
             Environment to perform evaluation in.
         side_channels : dict
             Dictionary of side channel objects used to specify environment
