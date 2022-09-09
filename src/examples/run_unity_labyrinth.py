@@ -14,8 +14,16 @@ import os, sys
 from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
+import yaml
 
 # %% Setup and create the environment
+
+# Import the environment information
+env_info_folder = os.path.abspath('../Environments')
+env_info_file_name = 'unity_labyrinth_mod.yaml'
+env_info_str = os.path.join(env_info_folder, env_info_file_name)
+with open(env_info_str, 'rb') as f:
+    env_info = yaml.safe_load(f)
 
 env_settings = {
     'time_scale' : 99.0,
@@ -62,7 +70,7 @@ if save_learned_controllers and not os.path.isdir(save_path):
 controller_list = []
 
 if load_folder_name == '':
-    for i in range(12):
+    for i in range(env_info['N_A']):
         controller_list.append(UnityLabyrinthController(i, env, env_settings=env_settings))
 else:
     for controller_dir in os.listdir(load_dir):
@@ -86,8 +94,6 @@ if load_folder_name == '':
                         prob_threshold, 
                         training_iters, 
                         num_rollouts, 
-                        # n_steps_per_rollout,
-                        # meta_controller_n_steps_per_rollout,
                         random_seed=rseed)
 else:
     results = Results(load_dir=load_dir)
@@ -128,29 +134,16 @@ results.save(save_path)
 
 # %%
 
-# Construct high-level MDP and solve for the max reach probability
-S = np.arange(-1, 11)
-A = np.arange(len(controller_list))
-s_i = 0
-s_goal = 8
-s_fail = -1
+# Setup the high-level MDP object
+S = np.arange(-1, env_info['N_S'] - 1)
+A = np.arange(env_info['N_A'])
+successor_map = {}
+for key,val in env_info['successor_map'].items():
+    newkey = tuple(int(x) for x in key.strip('[]').split(','))
+    newval = val
+    successor_map[newkey] = newval
 
-successor_map = {
-    (0,0) : 2,
-    (0,1) : 1,
-    (1,2) : 3,
-    (1,3) : 5,
-    (2,4) : 9,
-    (9,5) : 10,
-    (3,6) : 4,
-    (4,7) : 3,
-    (5,8) : 6,
-    (10,9): 8,
-    (6,10): 7,
-    (7,11): 8,
-}
-
-hlmdp = HLMDP(S, A, s_i, s_goal, s_fail, controller_list, successor_map)
+hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], controller_list, successor_map)
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
 # Construct a meta-controller and emprirically evaluate it.

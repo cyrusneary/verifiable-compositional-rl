@@ -84,6 +84,87 @@ def solve_max_reward_perfect_subsystems(mdp,
 
     return policy, reward_max, feasible_flag            
 
+def solve_max_reward(mdp,
+                    reward_vec : np.ndarray):
+    #initialize gurobi model
+    linear_model = gb.Model("abs_mdp_linear")
+
+    #dictionary for state action occupancy
+    state_act_vars=dict()
+
+    avail_actions = mdp.avail_actions.copy()
+
+    #dummy action for goal state
+    avail_actions[mdp.s_g]=[0]
+
+    #create occupancy measures, probability variables and reward variables
+    for s in mdp.S:
+        for a in avail_actions[s]:
+            state_act_vars[s,a] = linear_model.addVar(lb=0, 
+                                        name="state_act_"+str(s)+"_"+str(a))
+
+    #gurobi updates model
+    linear_model.update()
+
+    #MDP bellman or occupancy constraints for each state
+    for s in mdp.S:
+        cons=0
+        #add outgoing occupancy for available actions
+        for a in avail_actions[s]:
+            cons+=state_act_vars[s,a]
+
+        #add ingoing occupancy for predecessor state actions
+        for s_bar, a_bar in mdp.predecessors[s]:
+            #this if clause ensures that you dont double count reaching goal and failure
+            if not s_bar == mdp.s_g and not s_bar == mdp.s_fail:
+                cons -= mdp.discount * state_act_vars[s_bar, a_bar] * mdp.controller_list[a_bar].get_success_prob() # optimism
+        #initial state occupancy
+        if s == mdp.s_i:
+            cons=cons-1
+
+        #sets occupancy constraints
+        linear_model.addConstr(cons==0)
+
+    obj = 0
+    for s in mdp.S:
+        for a in mdp.avail_actions[s]:
+            obj += reward_vec[s,a] * state_act_vars[s,a]
+
+    #set the objective, solve the problem
+    linear_model.setObjective(obj, gb.GRB.MAXIMIZE)
+    linear_model.optimize()
+
+    if linear_model.SolCount == 0:
+        feasible_flag = False
+    else:
+        feasible_flag = True
+
+    if feasible_flag:
+        # Construct the policy from the occupancy variables
+        policy = np.zeros((mdp.N_S, mdp.N_A), dtype=np.float)
+        for s in mdp.S:
+            if len(mdp.avail_actions[s]) == 0:
+                policy[s, :] = -1 # If no actions are available, return garbage value
+            else:
+                occupancy_state = np.sum([state_act_vars[s,a].x for a in mdp.avail_actions[s]])
+                # If the state has no occupancy measure under the solution, set the policy to 
+                # be uniform over available actions
+                if occupancy_state == 0.0:
+                    for a in mdp.avail_actions[s]:
+                        policy[s,a] = 1 / len(mdp.avail_actions[s])
+                if occupancy_state > 0.0:
+                    for a in mdp.avail_actions[s]:
+                        policy[s, a] = state_act_vars[s,a].x / occupancy_state
+    else:
+        policy = -1 * np.ones((mdp.N_S, mdp.N_A), dtype=np.float)
+
+    reward_max = 0
+    for s in mdp.S:
+        for a in mdp.avail_actions[s]:
+            reward_max += reward_vec[s,a] * state_act_vars[s,a].x
+
+    return policy, reward_max, feasible_flag   
+
 def solve_low_level_requirements_action(mdp, 
                                         reward_vec : np.ndarray,
                                         delta : float, 

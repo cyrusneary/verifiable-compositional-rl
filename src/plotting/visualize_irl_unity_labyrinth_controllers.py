@@ -14,7 +14,9 @@ import pickle
 from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
+
 from optimization_problems.high_level_reward_opt import solve_max_reward
+from optimization_problems.high_level_irl_opt import solve_optimistic_irl
 
 import yaml
 
@@ -42,7 +44,8 @@ max_timesteps_per_component = 2e5
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+# load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+load_folder_name = '2022-05-18_22-50-04_unity_labyrinth'
 save_learned_controllers = True
 
 experiment_name = 'unity_labyrinth'
@@ -121,22 +124,31 @@ for key,val in env_info['successor_map'].items():
     successor_map[newkey] = newval
 
 hlmdp = HLMDP(S, A, env_info["s_i"], env_info["s_goal"], env_info["s_fail"], controller_list, successor_map)
-policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
+
+# # Import the demonstrations
+# demo_folder = os.path.abspath('../high_level_demos')
+# demo_file_name = 'labyrinth_demo.yaml'
+# demo_str = os.path.join(demo_folder, demo_file_name)
+
+# with open(demo_str, 'rb') as f:
+#     demonstrations = yaml.safe_load(f)['demonstrations']
+# state_feature_counts, state_act_feature_counts = \
+#     hlmdp.process_high_level_demonstrations(demos=demonstrations)
+# irl_results = solve_optimistic_irl(hlmdp,
+#                                     state_act_feature_counts, 
+#                                     num_iterations=100)
+
+# reward_vec = irl_results['reward_vec']
+
+# policy, _, feasible_flag = solve_max_reward(hlmdp, reward_vec)
+
+policy = np.zeros((hlmdp.N_S, hlmdp.N_A))
+policy[0, 1] = 1.0
+policy[1, 2] = 1.0
+policy[3, 6] = 1.0
+policy[4, 7] = 1.0
 
 side_channels['engine_config_channel'].set_configuration_parameters(time_scale=1.0)
-
-# for i in range(12):
-#     controller_list[i].demonstrate_capabilities(env, 
-#                                                 side_channels['custom_side_channel'], 
-#                                                 n_episodes=1, 
-#                                                 n_steps=300)
-
-# controller_list[11].demonstrate_capabilities(env, 
-#                                             side_channels['custom_side_channel'], 
-#                                             n_episodes=20, 
-#                                             n_steps=300)
-
-# # %%
 
 # Construct a meta-controller and emprirically evaluate it.
 n_episodes = 5
@@ -149,14 +161,3 @@ meta_controller.demonstrate_capabilities(env,
                                         n_steps=n_steps_per_rollout, 
                                         render=render)
 meta_controller.unsubscribe_meta_controller(side_channels)
-
-side_channels['engine_config_channel'].set_configuration_parameters(time_scale=99.0)
-# Construct a meta-controller with this policy and empirically evaluate its performance
-meta_controller = MetaController(policy, hlmdp, side_channels)
-meta_success_rate = meta_controller.eval_performance(env,
-                                                    side_channels, 
-                                                    n_episodes=num_rollouts, 
-                                                    n_steps=n_steps_per_rollout)
-meta_controller.unsubscribe_meta_controller(side_channels)
-
-print(meta_success_rate)

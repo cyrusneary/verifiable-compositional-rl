@@ -55,6 +55,8 @@ training_iters = 5e4 # 5e4
 num_rollouts = 100 # 100
 n_steps_per_rollout = 500
 max_timesteps_per_component = 2e5
+delta = 0.1
+discount = 0.95
 
 # Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
@@ -144,12 +146,14 @@ results.update_controllers(controller_list)
 results.save(save_path)
 
 hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], 
-                controller_list, successor_map, discount=0.95)
+                controller_list, successor_map, discount=discount)
 
 state_feature_counts, state_act_feature_counts = \
     hlmdp.process_high_level_demonstrations(demos=demonstrations)
 
-irl_results = solve_optimistic_irl(hlmdp, state_act_feature_counts)
+irl_results = solve_optimistic_irl(hlmdp,
+                                    state_act_feature_counts, 
+                                    num_iterations=100)
 
 plot_irl_summary(irl_results)
 
@@ -164,7 +168,7 @@ policy, reward_max, feasibility_flat = \
     solve_max_reward_perfect_subsystems(hlmdp, reward_vec)
 
 policy, required_success_probs, achieved_reward, feasibility_flat =\
-     solve_low_level_requirements_action(hlmdp, reward_vec, 0.1, reward_max)
+     solve_low_level_requirements_action(hlmdp, reward_vec, delta, reward_max)
 
 print(required_success_probs)
 
@@ -180,77 +184,66 @@ print(required_success_probs)
 # results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
 # results.save(save_path)
 
-# # Main loop of iterative compositional reinforcement learning
+# Main loop of iterative compositional reinforcement learning
 
-# total_timesteps = training_iters
+total_timesteps = training_iters
 
-# while reach_prob < prob_threshold:
+performance_gaps = [1.0] # this is just a hack for now.
 
-#     # Solve the HLM biliniear program to obtain sub-task specifications.
-#     optimistic_policy, \
-#         required_reach_probs, \
-#             optimistic_reach_prob, \
-#                 feasible_flag = \
-#                     hlmdp.solve_low_level_requirements_action(prob_threshold, 
-#                     max_timesteps_per_component=max_timesteps_per_component)
+while np.max(performance_gaps) > 0.01:
 
-#     if not feasible_flag:
-#         print(required_reach_probs)
+    # Solve the HLM biliniear program to obtain sub-task specifications.
+    optimistic_policy, \
+        required_reach_probs, \
+            achieved_reward, \
+                feasible_flag = \
+                    solve_low_level_requirements_action(hlmdp, reward_vec, delta, reward_max)
 
-#     # Print the empirical sub-system estimates and the sub-system 
-#     # specifications to terminal
-#     for controller_ind in range(len(hlmdp.controller_list)):
-#         controller = hlmdp.controller_list[controller_ind]
-#         print('Sub-task: {}, \
-#                 Achieved success prob: {}, Required success prob: {}'\
-#                     .format(controller_ind, 
-#                             controller.get_success_prob(), 
-#                             controller.data['required_success_prob']))
+    if not feasible_flag:
+        print(required_reach_probs)
 
-#     # Decide which sub-system to train next.
-#     performance_gaps = []
-#     for controller_ind in range(len(hlmdp.controller_list)):
-#         controller = hlmdp.controller_list[controller_ind]
-#         performance_gaps.append(controller.data['required_success_prob'] - \
-#                                 controller.get_success_prob())
+    # Print the empirical sub-system estimates and the sub-system 
+    # specifications to terminal
+    for controller_ind in range(len(hlmdp.controller_list)):
+        controller = hlmdp.controller_list[controller_ind]
+        print('Sub-task: {}, \
+                Achieved success prob: {}, Required success prob: {}'\
+                    .format(controller_ind, 
+                            controller.get_success_prob(), 
+                            controller.data['required_success_prob']))
 
-#     largest_gap_ind = np.argmax(performance_gaps)
-#     controller_to_train = hlmdp.controller_list[largest_gap_ind]
+    # Decide which sub-system to train next.
+    performance_gaps = []
+    for controller_ind in range(len(hlmdp.controller_list)):
+        controller = hlmdp.controller_list[controller_ind]
+        performance_gaps.append(controller.data['required_success_prob'] - \
+                                controller.get_success_prob())
 
-#     # Train the sub-system and empirically evaluate its performance
-#     print('Training controller {}'.format(largest_gap_ind))
-#     controller_to_train.learn(side_channels['custom_side_channel'], 
-#                                 total_timesteps=total_timesteps)
-#     print('Completed training controller {}'.format(largest_gap_ind))
-#     controller_to_train.eval_performance(env, 
-#                                         side_channels['custom_side_channel'], 
-#                                         n_episodes=num_rollouts,
-#                                         n_steps=n_steps_per_rollout)
+    largest_gap_ind = np.argmax(performance_gaps)
+    controller_to_train = hlmdp.controller_list[largest_gap_ind]
 
-#     # Save learned controller
-#     if save_learned_controllers:
-#         controller_save_path = os.path.join(save_path, 
-#                                     'controller_{}'.format(largest_gap_ind))
-#         if not os.path.isdir(controller_save_path):
-#             os.mkdir(controller_save_path)
-#         controller_to_train.save(controller_save_path)
+    # Train the sub-system and empirically evaluate its performance
+    print('Training controller {}'.format(largest_gap_ind))
+    controller_to_train.learn(side_channels['custom_side_channel'], 
+                                total_timesteps=total_timesteps)
+    print('Completed training controller {}'.format(largest_gap_ind))
+    controller_to_train.eval_performance(env, 
+                                        side_channels['custom_side_channel'], 
+                                        n_episodes=num_rollouts,
+                                        n_steps=n_steps_per_rollout)
 
-#     # Solve the HLM for the meta-policy maximizing reach probability
-#     policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
+    # Save learned controller
+    if save_learned_controllers:
+        controller_save_path = os.path.join(save_path, 
+                                    'controller_{}'.format(largest_gap_ind))
+        if not os.path.isdir(controller_save_path):
+            os.mkdir(controller_save_path)
+        controller_to_train.save(controller_save_path)
 
-#     # Construct a meta-controller with this policy and empirically evaluate its performance
-#     meta_controller = MetaController(policy, hlmdp, side_channels)
-#     meta_success_rate = meta_controller.eval_performance(env,
-#                                                         side_channels, 
-#                                                         n_episodes=num_rollouts, 
-#                                                         n_steps=n_steps_per_rollout)
-#     meta_controller.unsubscribe_meta_controller(side_channels)
-
-#     # Save results
-#     results.update_training_steps(total_timesteps)
-#     results.update_controllers(hlmdp.controller_list)
-#     results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
-#     results.save(save_path)
+    # Save results
+    results.update_training_steps(total_timesteps)
+    results.update_controllers(hlmdp.controller_list)
+    results.save(save_path)
 
 # # Once the loop has been completed, construct a meta-controller and visualize its performance
 
