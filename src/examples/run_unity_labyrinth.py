@@ -20,7 +20,7 @@ import yaml
 
 # Import the environment information
 env_info_folder = os.path.abspath('../Environments')
-env_info_file_name = 'unity_labyrinth_mod.yaml'
+env_info_file_name = 'unity_shuffle.yaml'
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
@@ -45,7 +45,7 @@ max_timesteps_per_component = 2e5
 load_folder_name = ''
 save_learned_controllers = True
 
-experiment_name = 'unity_labyrinth'
+experiment_name = 'unity_labyrinth_shuffle1_0'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')

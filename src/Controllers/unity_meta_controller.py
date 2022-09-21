@@ -177,11 +177,12 @@ class MetaController(object):
                 obs, reward, done, info = env.step(action)
                 if done:
                     break
+        
 
         # Unsubscribe the observer from the side-channel to prevent it from
         # continuing to count after the test is done.
         side_channels['custom_side_channel'].unsubscribe(observer)
-
+        # print("Obs success count : ", observer.success_count, "Trials : ",  trials)
         return observer.success_count / trials
 
     def demonstrate_capabilities(self, 

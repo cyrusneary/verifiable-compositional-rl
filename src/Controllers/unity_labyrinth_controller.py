@@ -120,7 +120,7 @@ class UnityLabyrinthController(object):
         # Unsubscribe the observer from the side-channel to prevent it from
         # continuing to count after the test is done.
         side_channel.unsubscribe(observer)
-
+        # print("Obs success count : ", observer.success_count, "Trials : ",  trials)
         # Save the resulting data
         self.data['performance_estimates'][self.data['total_training_steps']] = {
             'success_count' : observer.success_count,
