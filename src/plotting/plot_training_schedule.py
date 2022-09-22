@@ -12,8 +12,8 @@ import tikzplotlib
 # %%
 # load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 # experiment_name = 'minigrid_labyrinth'
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
-experiment_name = 'unity_labyrinth'
+load_folder_name = '2022-09-15_02-10-37_unity_labyrinth_shuffle1_1'
+experiment_name = 'unity_labyrinth_shuffle1_1'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -64,6 +64,7 @@ ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
         linestyle='--')
         
 save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.tex')
+plt.savefig('plot_schedule_shuffle1_1_inference.png')
 tikzplotlib.save(save_path)
 
 

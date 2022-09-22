@@ -42,7 +42,7 @@ max_timesteps_per_component = 2e5
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
-load_folder_name = ''
+load_folder_name = '2022-09-15_02-10-37_unity_labyrinth_shuffle1_1'
 save_learned_controllers = True
 
 experiment_name = 'unity_labyrinth_shuffle1_0'
