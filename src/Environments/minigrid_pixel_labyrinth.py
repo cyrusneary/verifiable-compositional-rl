@@ -1,8 +1,9 @@
 # %%
 from gym_minigrid.minigrid import *
+# from minigrid.window import Window
 import numpy as np
 
-class Maze(MiniGridEnv):
+class PixelMaze(MiniGridEnv):
     """
         Maze environment.
 
@@ -23,6 +24,7 @@ class Maze(MiniGridEnv):
         self,
         agent_start_states = [(1,1,0)],
         slip_p=0.0,
+        tile_size=20,
     ):
 
         """
@@ -40,6 +42,8 @@ class Maze(MiniGridEnv):
         width = size
         height = size
 
+        self.tile_size = tile_size
+
         self.agent_start_states = agent_start_states
         self.goal_states = [(1, height - 2, 0), (1, height - 2, 1), (1, height - 2, 2), (1, height - 2, 3)]
 
@@ -49,14 +53,17 @@ class Maze(MiniGridEnv):
         )
 
         # Action enumeration for this environment
-        self.actions = Maze.Actions
+        self.actions = PixelMaze.Actions
 
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
 
+        # Observations are dictionaries containing an
+        # encoding of the grid and a textual 'mission' string
         self.observation_space = spaces.Box(
-            low=np.array([0,0,0]),
-            high=np.array([self.width, self.height, 3]),
+            low=0,
+            high=255,
+            shape=(self.agent_view_size * self.tile_size, self.agent_view_size * self.tile_size, 3),
             dtype='uint8'
         )
 
@@ -89,7 +96,7 @@ class Maze(MiniGridEnv):
         # Place a goal square
         for goal_state in self.goal_states:
             # self.put_obj(Goal(), goal_state[0], goal_state[1])
-            self.put_obj(Goal(), 1, height - 2)
+            self.put_obj(Goal(), 1, height-2)
         
         # Place dangerous lava
         self.grid.horz_wall(2, 7, 3, obj_type=Lava)
@@ -110,12 +117,46 @@ class Maze(MiniGridEnv):
 
     def gen_obs(self):
         """
-        Generate the observation of the agent, which in this environment, is its state.
+        Generate the agent's view (partially observable, low-resolution encoding)
         """
-        pos = self.agent_pos
-        direction = self.agent_dir
-        obs_out = np.array([pos[0], pos[1], direction])
-        return obs_out
+
+        grid, vis_mask = self.gen_obs_grid()
+
+        # Encode the partially observable view into a numpy array
+        image = grid.encode(vis_mask)
+
+        pov_img = self.get_obs_render(image, tile_size=self.tile_size)
+
+        assert hasattr(self, 'mission'), "environments must define a textual mission string"
+
+        # Observations are dictionaries containing:
+        # - an image (partially observable view of the environment)
+        # - the agent's direction/orientation (acting as a compass)
+        # - a textual mission string (instructions for the agent)
+        obs = {
+            'image': pov_img,
+            'direction': self.agent_dir,
+            'mission': self.mission
+        }
+
+        return pov_img
+
+    def get_obs_render(self, obs, tile_size=TILE_PIXELS//2):
+        """
+        Render an agent observation for visualization
+        """
+
+        grid, vis_mask = Grid.decode(obs)
+
+        # Render the whole grid
+        img = grid.render(
+            tile_size,
+            agent_pos=(self.agent_view_size // 2, self.agent_view_size - 1),
+            agent_dir=3,
+            highlight_mask=vis_mask
+        )
+
+        return img
 
     def step(self, action):
         """
