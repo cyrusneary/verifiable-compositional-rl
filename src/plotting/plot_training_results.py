@@ -13,14 +13,14 @@ import tikzplotlib
 # %%
 # load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 # experiment_name = 'minigrid_labyrinth'
-load_folder_name = '2022-09-15_02-10-37_unity_labyrinth_shuffle1_1'
-experiment_name = 'unity_labyrinth_shuffle1_1'
+load_folder_name = '2022-10-16_16-49-31_unity_labyrinth_compositional'
+experiment_name = 'unity_labyrinth_compositional'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
 assert(string_ind >= 0)
 base_path = base_path[0:string_ind + 4]
-base_path = os.path.join(base_path, 'data', 'saved_controllers')
+base_path = os.path.join(base_path, 'data_copy', 'final_models')
 
 load_dir = os.path.join(base_path, load_folder_name)
 
@@ -30,6 +30,7 @@ results = Results(load_dir=load_dir)
 required_success_prob = results.data['prob_threshold']
 
 timesteps = results.data['cparl_loop_training_steps']
+print("total timesteps : ", timesteps)
 comp_pred_success = [results.data['composition_predicted_success_prob'][t] for t in timesteps]
 comp_pred_success.insert(0,0)
 comp_empirical_success = [results.data['composition_rollout_mean'][t] for t in timesteps]
@@ -84,13 +85,13 @@ ax.legend(fontsize=15)
 yl = ax.get_ylim()
 ax.set_ylim(yl)
 
-ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
-        color='red',
-        linewidth=large_linewidth*2,
-        linestyle='--')
+# ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
+#         color='red',
+#         linewidth=large_linewidth*2,
+#         linestyle='--')
 
 save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_curves.tex')
-plt.savefig('plot_success_shuffle1_1_inference.png')
+plt.savefig('unity_labyrinth_compositional_results.png')
 tikzplotlib.save(save_path)
 
 

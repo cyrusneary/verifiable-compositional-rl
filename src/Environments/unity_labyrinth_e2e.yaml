@@ -1,0 +1,7 @@
+N_S: 3 # Number of states INCLUDING the failure state
+N_A: 1
+s_i: 0
+s_goal: 1
+s_fail: -1
+successor_map:
+  "[0,0]": 1

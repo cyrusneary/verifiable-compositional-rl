@@ -109,7 +109,9 @@ class HLMDP(object):
 
     def _construct_transition_function(self):
         for s in self.S:
+            # print("\n ---Controller list: {}---\n".format(self.controller_list))
             for action in self.avail_actions[s]:
+                # print("---Action{}---".format(action))
                 success_prob = self.controller_list[action].get_success_prob()
                 next_s = self.successor[(s, action)]
 

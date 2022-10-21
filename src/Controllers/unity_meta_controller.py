@@ -52,11 +52,19 @@ class MetaController(object):
         messasge
             A string containing the message passed on by the observable.
         """
+        #  ---MAP---  {(0, 0): 1, (0, 1): 2, (1, 2): 3, (6, 3): 2, (2, 4): 7, (7, 5): 2, (6, 6): 7, (7, 7): 6, (7, 8): 5, (5, 9): 7, (4, 10): 3, (3, 11): 4, (3, 12): 5, (5, 13): 3, (3, 14): 6, (6, 15): 3, (5, 16): 4, (7, 17): 8, (4, 18): 9, (8, 19): 9}
         if message == 'Completed sub task: {}'.format(self.current_controller_ind):
             # Get the new abstract state
-            self.current_abstract_state = \
+            # try:
+            if not(self.current_abstract_state == self.s_g):
+                self.current_abstract_state = \
                 self.successor[(self.current_abstract_state, 
                                 self.current_controller_ind)]
+            # except:
+            #     self.current_abstract_state = \
+            #     self.successor[(4, 
+            #                     18)]
+
 
             if not(self.current_abstract_state == self.s_g):
                 # Get the next abstract action to take

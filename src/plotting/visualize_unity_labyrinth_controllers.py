@@ -14,7 +14,7 @@ import pickle
 from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
-from optimization_problems.high_level_reward_opt import solve_max_reward
+# from optimization_problems.high_level_reward_opt import solve_max_reward
 
 import yaml
 
@@ -22,27 +22,27 @@ import yaml
 
 # Import the environment information
 env_info_folder = os.path.abspath('../Environments')
-env_info_file_name = 'unity_labyrinth.yaml'
+env_info_file_name = 'unity_shuffle.yaml'
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
 
 env_settings = {
-    'time_scale' : 99.0,
+    'time_scale' : 3.0,
 }
 
 env, side_channels = build_unity_labyrinth_env()
 
 prob_threshold = 0.95 # Desired probability of reaching the final goal
 training_iters = 5e4 # 5e4
-num_rollouts = 100 # 100
+num_rollouts = 10 # 100
 n_steps_per_rollout = 500
 max_timesteps_per_component = 2e5
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+load_folder_name = '2022-10-05_23-52-02_unity_labyrinth_shuffle_x_2_0_newobs_empirically0'
 save_learned_controllers = True
 
 experiment_name = 'unity_labyrinth'

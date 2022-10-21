@@ -20,7 +20,7 @@ import yaml
 
 # Import the environment information
 env_info_folder = os.path.abspath('../Environments')
-env_info_file_name = 'unity_shuffle.yaml'
+env_info_file_name = 'unity_labyrinth.yaml'
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
@@ -29,6 +29,7 @@ env_settings = {
     'time_scale' : 99.0,
 }
 
+
 env, side_channels = build_unity_labyrinth_env()
 side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
@@ -36,16 +37,16 @@ side_channels['engine_config_channel'].set_configuration_parameters(
 prob_threshold = 0.95 # Desired probability of reaching the final goal
 training_iters = 5e4 # 5e4
 num_rollouts = 100 # 1000
-n_steps_per_rollout = 50
+n_steps_per_rollout = 100
 meta_controller_n_steps_per_rollout = 5 * n_steps_per_rollout
-max_timesteps_per_component = 2e5
+max_timesteps_per_component = 2e5 #2e5
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
-load_folder_name = '2022-09-15_02-10-37_unity_labyrinth_shuffle1_1'
+load_folder_name = ''
 save_learned_controllers = True
 
-experiment_name = 'unity_labyrinth_shuffle1_0'
+experiment_name = 'unity_labyrinth_compositional'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -143,6 +144,7 @@ for key,val in env_info['successor_map'].items():
     newval = val
     successor_map[newkey] = newval
 
+
 hlmdp = HLMDP(S, A, env_info['s_i'], env_info['s_goal'], env_info['s_fail'], controller_list, successor_map)
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
@@ -193,10 +195,11 @@ while reach_prob < prob_threshold:
                                 controller.get_success_prob())
 
     largest_gap_ind = np.argmax(performance_gaps)
+    # largest_gap_ind = 0
     controller_to_train = hlmdp.controller_list[largest_gap_ind]
 
-    # Train the sub-system and empirically evaluate its performance
-    print('Training controller {}'.format(largest_gap_ind))
+    print('training controller {}'.format(largest_gap_ind))
+
     controller_to_train.learn(side_channels['custom_side_channel'], 
                                 total_timesteps=total_timesteps)
     print('Completed training controller {}'.format(largest_gap_ind))

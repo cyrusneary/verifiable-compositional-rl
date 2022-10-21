@@ -52,6 +52,7 @@ class UnityLabyrinthController(object):
         # Set the environment to the appropriate subtask
         sub_task_string = '{},{}'.format(self.controller_ind, self.controller_ind)
         side_channel.send_string(sub_task_string)
+        # print("\n ---LEARNING : {}--- \n".format(self.controller_ind))
 
         self.model.learn(total_timesteps=total_timesteps)
         self.data['total_training_steps'] = self.data['total_training_steps'] \
@@ -194,14 +195,16 @@ class UnityLabyrinthController(object):
     def get_success_prob(self):
         # Return the most recently estimated probability of success
         max_total_training_steps = np.max(list(self.data['performance_estimates'].keys()))
+        # print("\n ----PRINTING PROB SUCCESS----- : ", np.copy(self.data['performance_estimates'][max_total_training_steps]['success_rate']))
         return np.copy(self.data['performance_estimates'][max_total_training_steps]['success_rate'])
+        # return 1.0
 
     # def _set_training_env(self, env_settings):
     #     self.training_env = Maze(**env_settings)
     #     self.training_env.agent_start_states = self.init_states
     #     self.training_env.goal_states = self.final_states
 
-    def _init_learning_alg(self, env, verbose=False):
+    def _init_learning_alg(self, env, verbose):
         self.model = PPO("MlpPolicy", 
                             env, 
                             verbose=verbose,
