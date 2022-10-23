@@ -20,7 +20,7 @@ import yaml
 
 # Import the environment information
 env_info_folder = os.path.abspath('../Environments')
-env_info_file_name = 'unity_labyrinth_mod.yaml'
+env_info_file_name = 'unity_labyrinth.yaml'
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
@@ -36,7 +36,7 @@ side_channels['engine_config_channel'].set_configuration_parameters(
 prob_threshold = 0.95 # Desired probability of reaching the final goal
 training_iters = 5e4 # 5e4
 num_rollouts = 100 # 1000
-n_steps_per_rollout = 50
+n_steps_per_rollout = 100
 meta_controller_n_steps_per_rollout = 5 * n_steps_per_rollout
 max_timesteps_per_component = 2e5
 
@@ -71,12 +71,12 @@ controller_list = []
 
 if load_folder_name == '':
     for i in range(env_info['N_A']):
-        controller_list.append(UnityLabyrinthController(i, env, env_settings=env_settings))
+        controller_list.append(UnityLabyrinthController(i, env, env_settings=env_settings, verbose=True))
 else:
     for controller_dir in os.listdir(load_dir):
         controller_load_path = os.path.join(load_dir, controller_dir)
         if os.path.isdir(controller_load_path):
-            controller = UnityLabyrinthController(0, env, load_dir=controller_load_path)
+            controller = UnityLabyrinthController(0, env, load_dir=controller_load_path, verbose=True)
             controller_list.append(controller)
 
     # re-order the controllers by index
