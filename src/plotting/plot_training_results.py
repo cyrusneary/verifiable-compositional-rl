@@ -13,9 +13,11 @@ import tikzplotlib
 # %%
 # load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 # experiment_name = 'minigrid_labyrinth'
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
-load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
+# load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+# load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
 experiment_name = 'unity_labyrinth'
+load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
+experiment_name = 'minigrid_pixel_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -66,7 +68,7 @@ for i in range(len(results.data['controller_rollout_mean'])):
 ax.plot([x[0], x[-1]], [required_success_prob, required_success_prob],
         color='black',
         linewidth=large_linewidth,
-        linestyle='--',
+        # linestyle='--',
         label='Required Probability of Success')
 ax.plot(x, comp_pred_success, 
         color='blue',
@@ -80,15 +82,18 @@ ax.plot(x, comp_empirical_success,
         markersize=large_marker_size,
         linewidth=large_linewidth,
         label='Empirically Measured Probability of Task Success')
-ax.legend(fontsize=15)
+# ax.legend(fontsize=15)
 
 yl = ax.get_ylim()
 ax.set_ylim(yl)
 
-ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
+ax.plot([6.5e5, 6.5e5], [yl[0],yl[1]],
         color='red',
         linewidth=large_linewidth*2,
-        linestyle='--')
+        # linestyle='--',
+        )
+
+# plt.show()
 
 save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_curves.tex')
 tikzplotlib.save(save_path)

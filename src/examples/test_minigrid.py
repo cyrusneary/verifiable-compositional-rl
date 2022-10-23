@@ -1,3 +1,4 @@
+# %%
 from stable_baselines3 import PPO
 
 import gym
@@ -74,9 +75,16 @@ initial_states = [(10,17,2)]
 final_states = env.goal_states
 controller_list.append(MiniGridPixelController(11, initial_states, final_states, env_settings, verbose=True))
 
-controller_list[3].learn(total_timesteps=25000)
+print(controller_list[4].training_env.slip_p)
 
-controller_list[3].demonstrate_capabilities(n_episodes=5, n_steps=100, render=True)
+# %%
+controller_list[4].learn(total_timesteps=100000)
+
+
+# %%
+controller_list[4].eval_performance(n_episodes=400, n_steps=100)
+
+controller_list[4].demonstrate_capabilities(n_episodes=5, n_steps=100, render=True)
 
 # from gym.wrappers.pixel_observation import PixelObservationWrapper
 # env = PixelObservationWrapper(env, pixels_only=True)

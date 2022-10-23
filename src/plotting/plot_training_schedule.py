@@ -17,6 +17,9 @@ load_folder_name = '2022-10-14_19-10-42_unity_labyrinth'
 load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
 experiment_name = 'unity_labyrinth'
 
+load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
+experiment_name = 'minigrid_pixel_labyrinth'
+
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
 assert(string_ind >= 0)
@@ -60,11 +63,13 @@ for t in range(len(timesteps) - 1):
 yl = ax.get_ylim()
 ax.set_ylim(yl)
 
-ax.plot([0.25e6, 0.25e6], [yl[0],yl[1]],
-        color='red',
-        linewidth=large_linewidth*0.7,
-        linestyle='--')
+# ax.plot([6.5e5, 6.5e5], [yl[0],yl[1]],
+#         color='red',
+#         linewidth=large_linewidth*0.7,
+#         linestyle='--')
         
+# plt.show()
+
 save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.tex')
 tikzplotlib.save(save_path)
 

@@ -158,6 +158,15 @@ class PixelMaze(MiniGridEnv):
 
         return img
 
+    def gen_state(self):
+        """
+        Generate the observation of the agent, which in this environment, is its state.
+        """
+        pos = self.agent_pos
+        direction = self.agent_dir
+        state = np.array([pos[0], pos[1], direction])
+        return state
+
     def step(self, action):
         """
         Step the environment.

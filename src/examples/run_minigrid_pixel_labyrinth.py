@@ -8,7 +8,7 @@ sys.path.append('..')
 from Environments.minigrid_pixel_labyrinth import PixelMaze
 import numpy as np
 from Controllers.minigrid_pixel_controller import MiniGridPixelController
-from Controllers.meta_controller import MetaController
+from Controllers.pixel_meta_controller import PixelMetaController
 import pickle
 import os, sys
 from datetime import datetime
@@ -18,7 +18,7 @@ from utils.results_saver import Results
 # %% Setup and create the environment
 env_settings = {
     'agent_start_states' : [(1,1,0)],
-    'slip_p' : 0.1,
+    'slip_p' : 0.2,
 }
 
 env = PixelMaze(**env_settings)
@@ -27,6 +27,7 @@ prob_threshold = 0.95 # Desired probability of reaching the final goal
 training_iters = 5e4
 num_rollouts = 300
 max_timesteps_per_component = 5e5
+verbose = True
 
 n_steps_per_rollout = 100
 meta_controller_n_steps_per_rollout = 200
@@ -36,7 +37,7 @@ meta_controller_n_steps_per_rollout = 200
 load_folder_name = ''
 save_learned_controllers = True
 
-experiment_name = 'minigrid_labyrinth'
+experiment_name = 'minigrid_pixel_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -65,62 +66,62 @@ if load_folder_name == '':
     # First room controllers
     initial_states = [(1,1,0)]
     final_states = [(3,5,0)]
-    controller_list.append(MiniGridController(0, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(0, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(1,1,0)]
     final_states = [(5,2,1)]
-    controller_list.append(MiniGridController(1, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(1, initial_states, final_states, env_settings, verbose=verbose))
 
     # Top long room controllers
     initial_states = [(5,2,1)]
     final_states = [(10,5,1)]
-    controller_list.append(MiniGridController(2, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(2, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(5,2,1)]
     final_states = [(14,5,1)]
-    controller_list.append(MiniGridController(3, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(3, initial_states, final_states, env_settings, verbose=verbose))
 
     # Left room controllers
     initial_states = [(3,5,0)]
     final_states = [(5,10,1)]
-    controller_list.append(MiniGridController(4, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(4, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(5,10,1)]
     final_states = [(3,15,1)]
-    controller_list.append(MiniGridController(5, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(5, initial_states, final_states, env_settings, verbose=verbose))
 
     # Middle room controllers
     initial_states = [(10,5,1)]
     final_states = [(10,13,1)]
-    controller_list.append(MiniGridController(6, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(6, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(10,13,1)]
     final_states = [(10,5,3)]
-    controller_list.append(MiniGridController(7, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(7, initial_states, final_states, env_settings, verbose=verbose))
 
     # Right room controllers
     initial_states = [(14,5,1)]
     final_states = [(16,15,1)]
-    controller_list.append(MiniGridController(8, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(8, initial_states, final_states, env_settings, verbose=verbose))
 
     # Bottom room controllers
     initial_states = [(3,15,1)]
     final_states = env.goal_states
-    controller_list.append(MiniGridController(9, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(9, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(16,15,1)]
     final_states = [(10,17,2)]
-    controller_list.append(MiniGridController(10, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(10, initial_states, final_states, env_settings, verbose=verbose))
 
     initial_states = [(10,17,2)]
     final_states = env.goal_states
-    controller_list.append(MiniGridController(11, initial_states, final_states, env_settings))
+    controller_list.append(MiniGridPixelController(11, initial_states, final_states, env_settings, verbose=verbose))
 
 else:
     for controller_dir in os.listdir(load_dir):
         controller_load_path = os.path.join(load_dir, controller_dir)
         if os.path.isdir(controller_load_path):
-            controller = MiniGridController(0, load_dir=controller_load_path)
+            controller = MiniGridPixelController(0, load_dir=controller_load_path, verbose=verbose)
             controller_list.append(controller)
 
     # re-order the controllers by index
@@ -175,7 +176,7 @@ hlmdp = HLMDP([(1,1,0)], env.goal_states, controller_list)
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
 # Construct a meta-controller and emprirically evaluate it.
-meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
+meta_controller = PixelMetaController(policy, hlmdp.controller_list, hlmdp.state_list)
 meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 
 # Save the results
@@ -225,7 +226,7 @@ while reach_prob < prob_threshold:
     policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
     # Construct a meta-controller with this policy and empirically evaluate its performance
-    meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
+    meta_controller = PixelMetaController(policy, hlmdp.controller_list, hlmdp.state_list)
     meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 
     # Save results
@@ -236,7 +237,7 @@ while reach_prob < prob_threshold:
 
 # %% Once the loop has been completed, construct a meta-controller and visualize its performance
 
-meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
+meta_controller = PixelMetaController(policy, hlmdp.controller_list, hlmdp.state_list)
 print('evaluating performance of meta controller')
 meta_success_rate = meta_controller.eval_performance(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
 print('Predicted success prob: {}, empirically measured success prob: {}'.format(reach_prob, meta_success_rate))

@@ -18,6 +18,12 @@ class MiniGridPixelController(MiniGridController):
         
         super().__init__(controller_ind, init_states, final_states, env_settings, max_training_steps, load_dir, verbose)
 
+        self.task_complete_obs = []
+        for final_state in self.training_env.goal_states:
+            self.training_env.agent_pos = (final_state[0], final_state[1])
+            self.training_env.agent_dir = final_state[2]
+            self.task_complete_obs.append(self.training_env.gen_obs())
+
     def _set_training_env(self, env_settings):
         self.training_env = PixelMaze(**env_settings)
         self.training_env.agent_start_states = self.init_states
@@ -36,15 +42,22 @@ class MiniGridPixelController(MiniGridController):
                             learning_rate=2.5e-4,
                             clip_range=0.2)
 
-    def is_task_complete(self, obs):
+    def is_task_complete(self, state):
         """
         Return true if the current observation indicates the agent has already reached its goal.
         """
-        current_state = (obs[0], obs[1], obs[2])
+        current_state = (state[0], state[1], state[2])
         if current_state in self.final_states:
             return True
         else:
             return False
+
+    # def is_task_complete(self, obs):
+    #     for task_complete_obs in self.task_complete_obs:
+    #         if (np.array(obs) == np.array(task_complete_obs)).all():
+    #             return True
+    #     else:
+    #         return False
 
     def demonstrate_capabilities(self, n_episodes=5, n_steps=100, render=True):
         """

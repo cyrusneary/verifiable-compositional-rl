@@ -1,6 +1,6 @@
 import numpy as np
 
-class MetaController(object):
+class PixelMetaController(object):
 
     """
     Object representing a meta controller.
@@ -26,7 +26,7 @@ class MetaController(object):
         self.state_list = state_list
         self.current_controller_ind = None
 
-    def obs_mapping(self, obs):
+    def obs_mapping(self, obs, state):
         """
         Map from an environment observation (state) to the corresponding 
         high-level state.
@@ -36,7 +36,7 @@ class MetaController(object):
         obs : tuple
             Tuple representing the current environment observation (state).
         """
-        state = (obs[0], obs[1], obs[2])
+        state = (state[0], state[1], state[2])
 
         obs_in_abstract_state = False
 
@@ -53,7 +53,7 @@ class MetaController(object):
     def reset(self):
         self.current_controller_ind = None
 
-    def predict(self, obs, deterministic=True):
+    def predict(self, obs, state, deterministic=True):
         """
         Get the system's action, given the current environment observation (state)
 
@@ -71,12 +71,12 @@ class MetaController(object):
             controller = self.controller_list[self.current_controller_ind]
 
             # If the controller's task has been completed, deselect it
-            if controller.is_task_complete(obs):
+            if controller.is_task_complete(state):
                 self.current_controller_ind = None
 
         # In no controller is selected, choose which controller to execute
         if self.current_controller_ind is None:
-            meta_state = self.obs_mapping(obs)
+            meta_state = self.obs_mapping(obs, state)
             controller_probabilities = self.meta_policy[meta_state, :]
             self.current_controller_ind = np.random.choice(len(self.controller_list), p=controller_probabilities)
         
@@ -122,7 +122,8 @@ class MetaController(object):
             for step_ind in range(n_steps):
                 num_steps = num_steps + 1
                 total_steps = total_steps + 1
-                action, _states = self.predict(obs, deterministic=True)
+                state = env.gen_state()
+                action, _states = self.predict(obs, state, deterministic=True)
                 obs, reward, done, info = env.step(action)
                 if done:
                     if info['task_complete']:
@@ -150,7 +151,8 @@ class MetaController(object):
             obs = env.reset()
             self.reset()
             for step in range(n_steps):
-                action, _states = self.predict(obs, deterministic=True)
+                state = env.gen_state()
+                action, _states = self.predict(obs, state, deterministic=True)
                 obs, reward, done, info = env.step(action)
                 if render:
                     env.render(highlight=False)
