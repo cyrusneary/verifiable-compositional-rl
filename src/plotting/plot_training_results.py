@@ -14,6 +14,7 @@ import tikzplotlib
 # load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 # experiment_name = 'minigrid_labyrinth'
 load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
 experiment_name = 'unity_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
