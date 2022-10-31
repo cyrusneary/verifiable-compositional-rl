@@ -45,12 +45,24 @@ new folders in which to save the learned sub-systems and the testing results wit
 
 ### Continuous Labyrinth Experiments
 
-To run the continuous Labyrinth experiments, a bit of extra setup is required.
-- First, download the appropriate version of Unity as instrcuted above.
-- Next, grab the Unity labyrinth project folder, and drop it into the Unity HUB to create a new version of the labyrinth project in Unity.
+To run the continuous Labyrinth experiments, some extra setup is required.
+- First, download the appropriate version of Unity as instructed above.
+- Next, grab the Unity labyrinth project folder from [this repository](https://github.com/cyrusneary/unity_labyrinth), and drop it into the Unity HUB to create a new version of the labyrinth project in Unity.
 - Open this labyrinth project and in the Unity editor, open scenes\SampleScene.
 - In *this* repository, navigate to the \src directory. Run:
-    >python run_labyrinth.py
+    >python run_unity_labyrinth.py
 - You should see the line "Listening on port 5004. Start training by pressing the Play button in the Unity Editor."
 - Click on the play button at the top of the Unity editor to begin training.
 
+## Citation
+To cite this project, please use:
+~~~
+@inproceedings{neary2022verifiable,
+  title={Verifiable and compositional reinforcement learning systems},
+  author={Neary, Cyrus and Verginis, Christos and Cubuktepe, Murat and Topcu, Ufuk},
+  booktitle={Proceedings of the International Conference on Automated Planning and Scheduling},
+  volume={32},
+  pages={615--623},
+  year={2022}
+}
+~~~
