@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.core.numeric import roll
 from stable_baselines3 import PPO
-from Environments.minigrid_labyrinth import Maze
+from environments.minigrid_labyrinth import Maze
 import os, sys
 from datetime import datetime
 import pickle

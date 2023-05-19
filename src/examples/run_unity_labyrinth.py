@@ -5,10 +5,10 @@
 import os, sys
 sys.path.append('..')
 
-from Environments.unity_labyrinth import build_unity_labyrinth_env
+from environments.unity_env import build_unity_env
 import numpy as np
-from Controllers.unity_labyrinth_controller import UnityLabyrinthController
-from Controllers.unity_meta_controller import MetaController
+from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_meta_controller import MetaController
 import pickle
 import os, sys
 from datetime import datetime
@@ -16,11 +16,15 @@ from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
 import yaml
 
+from config.gq_20_subgoals_config import cfg
+
 # %% Setup and create the environment
 
 # Import the environment information
-env_info_folder = os.path.abspath('../Environments')
-env_info_file_name = 'unity_labyrinth.yaml'
+# env_info_file_name = 'unity_labyrinth.yaml'
+# env_info_file_name = 'gq_mission_20_subgoals.yaml'
+env_info_file_name = cfg['hlmdp_file_name']
+env_info_folder = os.path.abspath('../environments')
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
@@ -29,23 +33,23 @@ env_settings = {
     'time_scale' : 99.0,
 }
 
-env, side_channels = build_unity_labyrinth_env()
+env, side_channels = build_unity_env()
 side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
 
-prob_threshold = 0.95 # Desired probability of reaching the final goal
-training_iters = 5e4 # 5e4
-num_rollouts = 100 # 1000
-n_steps_per_rollout = 100
-meta_controller_n_steps_per_rollout = 5 * n_steps_per_rollout
-max_timesteps_per_component = 2e5
+prob_threshold = cfg['icrl_parameters']['prob_threshold'] # Desired probability of reaching the final goal
+training_iters = cfg['icrl_parameters']['training_iters']
+num_rollouts = cfg['icrl_parameters']['num_rollouts'] 
+n_steps_per_rollout = cfg['icrl_parameters']['n_steps_per_rollout']
+meta_controller_n_steps_per_rollout = cfg['icrl_parameters']['meta_controller_n_steps_per_rollout']
+max_timesteps_per_component = cfg['icrl_parameters']['max_timesteps_per_component']
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 load_folder_name = ''
 save_learned_controllers = True
 
-experiment_name = 'unity_labyrinth'
+experiment_name = env_info_file_name.split('.yaml')[0] #'unity_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -117,7 +121,7 @@ for controller_ind in range(len(controller_list)):
     # anything yet so they will likely have no chance of success.)
     controller.eval_performance(env, 
                                 side_channels['custom_side_channel'], 
-                                n_episodes=10,
+                                n_episodes=1,
                                 n_steps=n_steps_per_rollout)
     print('Controller {} achieved prob succes: {}'.format(controller_ind, 
                                                 controller.get_success_prob()))

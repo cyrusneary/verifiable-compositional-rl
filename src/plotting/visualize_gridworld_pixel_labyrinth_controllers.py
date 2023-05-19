@@ -6,10 +6,10 @@ import os, sys
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 sys.path.append('..')
 
-from Environments.minigrid_pixel_labyrinth import PixelMaze
+from environments.minigrid_pixel_labyrinth import PixelMaze
 import numpy as np
-from Controllers.minigrid_pixel_controller import MiniGridPixelController
-from Controllers.pixel_meta_controller import PixelMetaController
+from controllers.minigrid_pixel_controller import MiniGridPixelController
+from controllers.pixel_meta_controller import PixelMetaController
 import pickle
 import os, sys
 from datetime import datetime

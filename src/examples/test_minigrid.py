@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import os, sys
 sys.path.append('..')
 
-from Environments.minigrid_pixel_labyrinth import PixelMaze
-from Controllers.minigrid_pixel_controller import MiniGridPixelController
+from environments.minigrid_pixel_labyrinth import PixelMaze
+from controllers.minigrid_pixel_controller import MiniGridPixelController
 
 env_settings = {
     'agent_start_states' : [(1,1,0)],

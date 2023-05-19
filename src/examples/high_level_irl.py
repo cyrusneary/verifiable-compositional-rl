@@ -6,9 +6,9 @@ from MDP.general_high_level_mdp import HLMDP
 from optimization_problems.high_level_irl_opt import solve_optimistic_irl
 from plotting.plot_irl_results import plot_irl_summary
 
-from Environments.unity_labyrinth import build_unity_labyrinth_env
-from Controllers.unity_labyrinth_controller import UnityLabyrinthController
-from Controllers.unity_meta_controller import MetaController
+from environments.unity_env import build_unity_env
+from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_meta_controller import MetaController
 import pickle
 from datetime import datetime
 import torch
@@ -46,7 +46,7 @@ env_settings = {
     'time_scale' : 99.0,
 }
 
-env, side_channels = build_unity_labyrinth_env()
+env, side_channels = build_unity_env()
 side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
 

@@ -6,10 +6,10 @@ import os, sys
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 sys.path.append('..')
 
-from Environments.unity_labyrinth import build_unity_labyrinth_env
+from environments.unity_env import build_unity_env
 import numpy as np
-from Controllers.unity_labyrinth_controller import UnityLabyrinthController
-from Controllers.unity_meta_controller import MetaController
+from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_meta_controller import MetaController
 import pickle
 from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
@@ -33,7 +33,7 @@ env_settings = {
     'time_scale' : 99.0,
 }
 
-env, side_channels = build_unity_labyrinth_env()
+env, side_channels = build_unity_env()
 
 prob_threshold = 0.95 # Desired probability of reaching the final goal
 training_iters = 5e4 # 5e4

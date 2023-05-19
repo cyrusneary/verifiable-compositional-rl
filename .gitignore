@@ -133,3 +133,6 @@ dmypy.json
 *.tex
 
 src/data/*
+
+src/examples/results/*
+src/examples/tensorboard/*

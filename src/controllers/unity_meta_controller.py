@@ -1,5 +1,7 @@
 import numpy as np
-from Environments.unity_labyrinth import CustomSideChannel
+import sys
+sys.path.append('..')
+from environments.unity_env import CustomSideChannel
 from MDP.general_high_level_mdp import HLMDP
 from utils.observers import ObserverIncrementTaskSuccessCount
 

@@ -10,7 +10,7 @@ from mlagents_envs.side_channel.side_channel import (
 )
 import uuid
 
-def build_unity_labyrinth_env():
+def build_unity_env():
     """
     Method to construct the unity environment and set up the necessary
     information channels.
