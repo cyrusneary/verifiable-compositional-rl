@@ -136,3 +136,6 @@ src/data/*
 
 src/examples/results/*
 src/examples/tensorboard/*
+src/examples/gq_robotics/results/*
+src/examples/gq_robotics/tensorboard/*
+src/examples/gq_robotics/data/*
