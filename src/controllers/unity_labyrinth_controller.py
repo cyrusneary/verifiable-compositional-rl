@@ -18,12 +18,14 @@ class UnityLabyrinthController(object):
                 env_settings=None, 
                 max_training_steps=1e6, 
                 load_dir=None, 
-                verbose=False):
+                verbose=False,
+                tensorboard_log=None):
         
         self.controller_ind = controller_ind
         self.env_settings = env_settings
         self.verbose = verbose
         self.max_training_steps = max_training_steps
+        self.tensorboard_log = tensorboard_log
 
         self.data = {
             'total_training_steps' : 0,
@@ -33,11 +35,15 @@ class UnityLabyrinthController(object):
 
         if load_dir is None:
             assert env_settings is not None
-            self._init_learning_alg(env, verbose=self.verbose)
+            self._init_learning_alg(
+                env, 
+                verbose=self.verbose,
+                tensorboard_log=self.tensorboard_log
+            )
         else:
             self.load(env, load_dir)
 
-    def learn(self, side_channel, total_timesteps=5e4):
+    def learn(self, side_channel, total_timesteps=5e4, callback=None):
         """
         Train the sub-system for a specified number of timesteps.
 
@@ -48,12 +54,15 @@ class UnityLabyrinthController(object):
             environment and notifies all subscribed observers.
         total_timesteps : int
             Total number of timesteps to train the sub-system for.
+        callback (optional) : function
+            Callback to pass into PPO training algorithm. Gets called
+            when rollouts are collected.
         """
         # Set the environment to the appropriate subtask
         sub_task_string = '{},{}'.format(self.controller_ind, self.controller_ind)
         side_channel.send_string(sub_task_string)
 
-        self.model.learn(total_timesteps=total_timesteps)
+        self.model.learn(total_timesteps=total_timesteps, callback=callback)
         self.data['total_training_steps'] = self.data['total_training_steps'] \
                                                         + total_timesteps
 
@@ -201,7 +210,7 @@ class UnityLabyrinthController(object):
     #     self.training_env.agent_start_states = self.init_states
     #     self.training_env.goal_states = self.final_states
 
-    def _init_learning_alg(self, env, verbose=False):
+    def _init_learning_alg(self, env, verbose=False, tensorboard_log=None):
         self.model = PPO("MlpPolicy", 
                             env, 
                             verbose=verbose,
@@ -212,7 +221,8 @@ class UnityLabyrinthController(object):
                             n_epochs=10,
                             ent_coef=0.0,
                             learning_rate=2.5e-4,
-                            clip_range=0.2)
+                            clip_range=0.2,
+                            tensorboard_log=tensorboard_log)
 
     def demonstrate_capabilities(self, 
                                     env, 

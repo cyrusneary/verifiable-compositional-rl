@@ -16,7 +16,7 @@ from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
 import yaml
 
-from config.gq_20_subgoals_config import cfg
+from examples.gq_experiments.config.gq_20_subgoals_config import cfg
 
 # %% Setup and create the environment
 
@@ -46,7 +46,7 @@ max_timesteps_per_component = cfg['icrl_parameters']['max_timesteps_per_componen
 
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
-load_folder_name = ''
+load_folder_name = '2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed'
 save_learned_controllers = True
 
 experiment_name = env_info_file_name.split('.yaml')[0] #'unity_labyrinth'

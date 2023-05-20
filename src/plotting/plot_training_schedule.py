@@ -20,6 +20,9 @@ experiment_name = 'unity_labyrinth'
 load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
 experiment_name = 'minigrid_pixel_labyrinth'
 
+load_folder_name = '2023-05-10_21-57-17_gq_mission_20_subgoals'
+experiment_name = 'gq_mission_20_subgoals'
+
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
 assert(string_ind >= 0)

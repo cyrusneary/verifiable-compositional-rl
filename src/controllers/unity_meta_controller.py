@@ -223,5 +223,6 @@ class MetaController(object):
                 action, _states = self.predict(obs, deterministic=True)
                 obs, reward, done, info = env.step(action)
                 if done:
+                    print('Episode {} ended after {} steps.'.format(episode_ind, step))
                     break
 
