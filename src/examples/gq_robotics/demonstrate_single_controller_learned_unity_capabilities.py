@@ -1,6 +1,6 @@
 
 import os, sys
-sys.path.append('..')
+sys.path.append('../..')
 
 from environments.unity_env import build_unity_env
 import numpy as np
@@ -14,8 +14,8 @@ from tqdm import tqdm
 
 from stable_baselines3 import PPO
 
-experiment_name = '2023-05-10_21-38-16_gq_simple_nav_task'
-num_steps = 3e5
+experiment_name = '2023-05-20_16-32-24_pretrain_warthog_controller'
+num_steps = 2.8e5
 
 env_settings = {
     'time_scale' : 1.0,
@@ -25,8 +25,10 @@ env, side_channels = build_unity_env()
 obs = env.reset()
 
 # Load the previously trained model
-save_dir = os.path.join('results', 'saved_models')
-model_file = os.path.abspath(os.path.join(save_dir, experiment_name, 'rl_model_' + str(int(num_steps)) + '_steps.zip'))
+# save_dir = os.path.join('results', 'saved_models')
+# model_file = os.path.abspath(os.path.join(save_dir, experiment_name, 'rl_model_' + str(int(num_steps)) + '_steps.zip'))
+save_dir = os.path.join('data', 'saved_controllers')
+model_file = os.path.abspath(os.path.join(save_dir, experiment_name, 'pretrained_controller', 'checkpoint_' + str(int(num_steps)) + '_steps.zip'))
 
 print(model_file)
 

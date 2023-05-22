@@ -6,7 +6,7 @@ from datetime import datetime
 import pickle
 from utils.observers import ObserverIncrementTaskSuccessCount
 
-class UnityLabyrinthController(object):
+class UnityController(object):
     """
     Class representing PPO-based controllers that learn to accomplish 
     goal-oriented sub-tasks within the unity labyrinth gym environment.

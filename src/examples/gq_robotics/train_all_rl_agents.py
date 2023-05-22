@@ -7,7 +7,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 
 from environments.unity_env import build_unity_env
 import numpy as np
-from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_controller import UnityController
 import os, sys
 from datetime import datetime
 from utils.results_saver import Results
@@ -77,7 +77,7 @@ if load_folder_name == '':
     for i in range(env_info['N_A']):
         tensorboard_folder = base_tensorboard_folder + 'controller_{}'.format(i)
         controller_list.append(
-            UnityLabyrinthController(
+            UnityController(
                 i, 
                 env, 
                 env_settings=env_settings, 
@@ -89,7 +89,7 @@ else:
     for controller_dir in os.listdir(load_dir):
         controller_load_path = os.path.join(load_dir, controller_dir)
         if os.path.isdir(controller_load_path):
-            controller = UnityLabyrinthController(
+            controller = UnityController(
                 0, 
                 env, 
                 load_dir=controller_load_path, 

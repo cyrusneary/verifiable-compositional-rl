@@ -1,6 +1,6 @@
 
 import os, sys
-sys.path.append('..')
+sys.path.append('../..')
 
 from datetime import datetime
 
@@ -25,13 +25,6 @@ current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 save_dir = os.path.abspath(os.path.join('results', 'saved_models', current_time + '_' + experiment_name))
 if not os.path.isdir(save_dir): 
     os.makedirs(save_dir)
-
-# Setup and create the environment
-env_info_folder = os.path.abspath('../environments')
-env_info_file_name = 'gq_mission_20_subgoals.yaml'
-env_info_str = os.path.join(env_info_folder, env_info_file_name)
-with open(env_info_str, 'rb') as f:
-    env_info = yaml.safe_load(f)
 
 env_settings = {
     'time_scale' : 99.0,

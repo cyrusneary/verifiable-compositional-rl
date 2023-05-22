@@ -6,7 +6,7 @@ sys.path.append('../..')
 
 from environments.unity_env import build_unity_env
 import numpy as np
-from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_controller import UnityController
 from controllers.unity_meta_controller import MetaController
 import pickle
 import os, sys
@@ -70,12 +70,12 @@ controller_list = []
 
 if load_folder_name == '':
     for i in range(env_info['N_A']):
-        controller_list.append(UnityLabyrinthController(i, env, env_settings=env_settings, verbose=True))
+        controller_list.append(UnityController(i, env, env_settings=env_settings, verbose=True))
 else:
     for controller_dir in os.listdir(load_dir):
         controller_load_path = os.path.join(load_dir, controller_dir)
         if os.path.isdir(controller_load_path):
-            controller = UnityLabyrinthController(0, env, load_dir=controller_load_path, verbose=True)
+            controller = UnityController(0, env, load_dir=controller_load_path, verbose=True)
             controller_list.append(controller)
 
     # re-order the controllers by index
