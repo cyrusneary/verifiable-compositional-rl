@@ -5,21 +5,23 @@ from environments.unity_env import build_unity_env
 import numpy as np
 from controllers.unity_controller import UnityController
 from controllers.unity_meta_controller import MetaController
-import pickle
 import os, sys
 from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
 import yaml
 
+import torch
+import random
+
+from utils.loaders import instantiate_controllers, load_env_info
+
 from config.gq_20_subgoals_config import cfg
 
 # Setup and create the environment
-
-# Import the environment information
-env_info_file_name = cfg['hlmdp_file_name']
+# Import the environment information (HLMDP Structure)
 env_info_folder = os.path.abspath('../../environments')
-env_info_str = os.path.join(env_info_folder, env_info_file_name)
+env_info_str = os.path.join(env_info_folder, cfg['hlmdp_file_name'])
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
 
@@ -31,76 +33,88 @@ env, side_channels = build_unity_env()
 side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
 
-prob_threshold = cfg['icrl_parameters']['prob_threshold'] # Desired probability of reaching the final goal
-training_iters = cfg['icrl_parameters']['training_iters']
-num_rollouts = cfg['icrl_parameters']['num_rollouts'] 
-n_steps_per_rollout = cfg['icrl_parameters']['n_steps_per_rollout']
-meta_controller_n_steps_per_rollout = cfg['icrl_parameters']['meta_controller_n_steps_per_rollout']
-max_timesteps_per_component = cfg['icrl_parameters']['max_timesteps_per_component']
-
-# Set the load directory (if loading pre-trained sub-systems) 
-# or create a new directory in which to save results
-load_folder_name = '2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed'
-save_learned_controllers = True
-
-experiment_name = env_info_file_name.split('.yaml')[0]
-
-base_path = os.path.abspath(os.path.curdir)
-string_ind = base_path.find('src')
-assert(string_ind >= 0)
-base_path = base_path[0:string_ind + 4]
-base_path = os.path.join(base_path, 'examples/gq_robotics', 'data', 'saved_controllers')
-
-load_dir = os.path.join(base_path, load_folder_name)
-
-if load_folder_name == '':
-    now = datetime.now()
-    dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-    rseed = int(now.time().strftime('%H%M%S'))
-    save_path = os.path.join(base_path, dt_string + '_' + experiment_name)
+# Instantiate the RL controllers.
+if cfg['controller_instantiation_method'] == 'new':
+    # Instantiate an entirely new collection of RL-based controllers
+    dt_string = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    save_path = os.path.join(
+        cfg['log_settings']['base_save_dir'], 
+        dt_string + '_' + cfg['experiment_name']
+    )
+    tensorboard_log = os.path.join(
+        cfg['log_settings']['base_tensorboard_logdir'], 
+        dt_string + '_' + cfg['experiment_name']
+    )
+    controller_list = instantiate_controllers(
+        env, 
+        env_settings=env_settings,
+        num_controllers=env_info['N_A'],
+        verbose=cfg['log_settings']['verbose'],
+        tensorboard_log=tensorboard_log,
+    )
+elif cfg['controller_instantiation_method'] == 'pre_trained':
+    # Instantiate a collection of RL-based controllers, initialized using some
+    # pre-trained controller.
+    dt_string = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    save_path = os.path.join(
+        cfg['log_settings']['base_save_dir'], 
+        dt_string + '_from_pre_trained_' + cfg['experiment_name']
+    )
+    load_path = os.path.join(
+        cfg['log_settings']['base_save_dir'],
+        cfg['load_folder_name']
+    )
+    tensorboard_log = os.path.join(
+        cfg['log_settings']['base_tensorboard_logdir'], 
+        dt_string + '_' + cfg['experiment_name']
+    )
+    controller_list = instantiate_controllers(
+        env, 
+        env_settings=env_settings,
+        num_controllers=env_info['N_A'],
+        pre_trained_load_dir=load_path,
+        verbose=cfg['log_settings']['verbose'],
+        tensorboard_log=tensorboard_log,
+    )
+elif cfg['controller_instantiation_method'] == 'load':
+    # Load a collection of pre-existing controllers.
+    save_path = os.path.join(
+        cfg['log_settings']['base_save_dir'], 
+        cfg['load_folder_name']
+    )
+    load_path = save_path
+    tensorboard_log = os.path.join(
+        cfg['log_settings']['base_tensorboard_logdir'], 
+        cfg['load_folder_name']
+    )
+    controller_list = instantiate_controllers(
+        env, 
+        env_settings=env_settings,
+        load_dir=load_path,
+        verbose=cfg['log_settings']['verbose'],
+        tensorboard_log=tensorboard_log,
+    )
 else:
-    save_path = os.path.join(base_path, load_folder_name)
+    raise ValueError('Invalid controller_instantiation_method in config file.')
 
-if save_learned_controllers and not os.path.isdir(save_path):
+if not os.path.isdir(save_path):
     os.mkdir(save_path)
 
-# Create or load the list of partially instantiated subtask controllers
-controller_list = []
-if load_folder_name == '':
-    for i in range(env_info['N_A']):
-        controller_list.append(UnityController(i, env, env_settings=env_settings, verbose=True))
-else:
-    for controller_dir in os.listdir(load_dir):
-        controller_load_path = os.path.join(load_dir, controller_dir)
-        if os.path.isdir(controller_load_path):
-            controller = UnityController(0, env, load_dir=controller_load_path, verbose=True)
-            controller_list.append(controller)
-
-    # re-order the controllers by index
-    reordered_list = []
-    for i in range(len(controller_list)):
-        for controller in controller_list:
-            if controller.controller_ind == i:
-                reordered_list.append(controller)
-    controller_list = reordered_list
-
 # Create or load object to store the results
-if load_folder_name == '':
+if cfg['controller_instantiation_method'] == 'new' or \
+    cfg['controller_instantiation_method'] == 'pre_trained':
     results = Results(controller_list, 
                         env_settings, 
-                        prob_threshold, 
-                        training_iters, 
-                        num_rollouts, 
-                        random_seed=rseed)
+                        cfg['icrl_parameters']['prob_threshold'], 
+                        cfg['icrl_parameters']['training_iters'], 
+                        cfg['icrl_parameters']['num_rollouts'] , 
+                        random_seed=cfg['rseed'])
 else:
-    results = Results(load_dir=load_dir)
-    rseed = results.data['random_seed']
+    results = Results(load_dir=load_path)
 
-import torch
-import random
-torch.manual_seed(rseed)
-random.seed(rseed)
-np.random.seed(rseed)
+torch.manual_seed(cfg['rseed'])
+random.seed(cfg['rseed'])
+np.random.seed(cfg['rseed'])
 
 print('Random seed: {}'.format(results.data['random_seed']))
 
@@ -111,15 +125,14 @@ for controller_ind in range(len(controller_list)):
     controller.eval_performance(env, 
                                 side_channels['custom_side_channel'], 
                                 n_episodes=1,
-                                n_steps=n_steps_per_rollout)
+                                n_steps=cfg['icrl_parameters']['n_steps_per_rollout'])
     print('Controller {} achieved prob succes: {}'.format(controller_ind, 
                                                 controller.get_success_prob()))
 
     # Save learned controller
-    if save_learned_controllers:
-        controller_save_path = \
-            os.path.join(save_path, 'controller_{}'.format(controller_ind))
-        controller.save(controller_save_path)
+    controller_save_path = \
+        os.path.join(save_path, 'controller_{}'.format(controller_ind))
+    controller.save(controller_save_path)
 
 results.update_training_steps(0)
 results.update_controllers(controller_list)
@@ -141,27 +154,24 @@ policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 meta_controller = MetaController(policy, hlmdp, side_channels)
 meta_success_rate = meta_controller.eval_performance(env,
                                                     side_channels,
-                                                    n_episodes=num_rollouts, 
-                                                    n_steps=meta_controller_n_steps_per_rollout)
+                                                    n_episodes=cfg['icrl_parameters']['num_rollouts'] , 
+                                                    n_steps=cfg['icrl_parameters']['meta_controller_n_steps_per_rollout'])
 meta_controller.unsubscribe_meta_controller(side_channels)
 
 # Save the results
-results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
+results.update_composition_data(meta_success_rate, cfg['icrl_parameters']['num_rollouts'] , policy, reach_prob)
 results.save(save_path)
 
 # Main loop of iterative compositional reinforcement learning
-
-total_timesteps = training_iters
-
-while reach_prob < prob_threshold:
+while reach_prob < cfg['icrl_parameters']['prob_threshold']:
 
     # Solve the HLM biliniear program to obtain sub-task specifications.
     optimistic_policy, \
         required_reach_probs, \
             optimistic_reach_prob, \
                 feasible_flag = \
-                    hlmdp.solve_low_level_requirements_action(prob_threshold, 
-                    max_timesteps_per_component=max_timesteps_per_component)
+                    hlmdp.solve_low_level_requirements_action(cfg['icrl_parameters']['prob_threshold'], 
+                    max_timesteps_per_component=cfg['icrl_parameters']['max_timesteps_per_component'])
 
     if not feasible_flag:
         print(required_reach_probs)
@@ -189,20 +199,19 @@ while reach_prob < prob_threshold:
     # Train the sub-system and empirically evaluate its performance
     print('Training controller {}'.format(largest_gap_ind))
     controller_to_train.learn(side_channels['custom_side_channel'], 
-                                total_timesteps=total_timesteps)
+                                total_timesteps=cfg['icrl_parameters']['training_iters'])
     print('Completed training controller {}'.format(largest_gap_ind))
     controller_to_train.eval_performance(env, 
                                         side_channels['custom_side_channel'], 
-                                        n_episodes=num_rollouts,
-                                        n_steps=n_steps_per_rollout)
+                                        n_episodes=cfg['icrl_parameters']['num_rollouts'] ,
+                                        n_steps=cfg['icrl_parameters']['n_steps_per_rollout'])
 
     # Save learned controller
-    if save_learned_controllers:
-        controller_save_path = os.path.join(save_path, 
-                                    'controller_{}'.format(largest_gap_ind))
-        if not os.path.isdir(controller_save_path):
-            os.mkdir(controller_save_path)
-        controller_to_train.save(controller_save_path)
+    controller_save_path = os.path.join(save_path, 
+                                'controller_{}'.format(largest_gap_ind))
+    if not os.path.isdir(controller_save_path):
+        os.mkdir(controller_save_path)
+    controller_to_train.save(controller_save_path)
 
     # Solve the HLM for the meta-policy maximizing reach probability
     policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
@@ -211,14 +220,14 @@ while reach_prob < prob_threshold:
     meta_controller = MetaController(policy, hlmdp, side_channels)
     meta_success_rate = meta_controller.eval_performance(env,
                                                         side_channels, 
-                                                        n_episodes=num_rollouts, 
-                                                        n_steps=meta_controller_n_steps_per_rollout)
+                                                        n_episodes=cfg['icrl_parameters']['num_rollouts'] , 
+                                                        n_steps=cfg['icrl_parameters']['meta_controller_n_steps_per_rollout'])
     meta_controller.unsubscribe_meta_controller(side_channels)
 
     # Save results
-    results.update_training_steps(total_timesteps)
+    results.update_training_steps(cfg['icrl_parameters']['training_iters'])
     results.update_controllers(hlmdp.controller_list)
-    results.update_composition_data(meta_success_rate, num_rollouts, policy, reach_prob)
+    results.update_composition_data(meta_success_rate, cfg['icrl_parameters']['num_rollouts'], policy, reach_prob)
     results.save(save_path)
     
     print('Predicted success prob: {}, Empirical success prob: {}'.format(reach_prob, meta_success_rate))
@@ -229,8 +238,8 @@ meta_controller = MetaController(policy, hlmdp, side_channels)
 print('evaluating performance of meta controller')
 meta_success_rate = meta_controller.eval_performance(env,
                                                     side_channels,
-                                                    n_episodes=num_rollouts, 
-                                                    n_steps=meta_controller_n_steps_per_rollout)
+                                                    n_episodes=cfg['icrl_parameters']['num_rollouts'], 
+                                                    n_steps=cfg['icrl_parameters']['meta_controller_n_steps_per_rollout'])
 meta_controller.unsubscribe_meta_controller(side_channels)
 print('Predicted success prob: {}, \
     empirically measured success prob: {}'.format(reach_prob, meta_success_rate))
@@ -241,7 +250,7 @@ meta_controller = MetaController(policy, hlmdp, side_channels)
 meta_controller.demonstrate_capabilities(env, 
                                         side_channels,
                                         n_episodes=n_episodes, 
-                                        n_steps=meta_controller_n_steps_per_rollout, 
+                                        n_steps=cfg['icrl_parameters']['meta_controller_n_steps_per_rollout'], 
                                         render=render)
 meta_controller.unsubscribe_meta_controller(side_channels)
 

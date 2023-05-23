@@ -12,16 +12,13 @@ from utils.results_saver import Results
 
 import yaml
 
+from utils.loaders import instantiate_controllers, load_env_info
+
 from examples.gq_robotics.config.gq_20_subgoals_config import cfg
 
 # Setup and create the environment
-
-# Import the environment information
-env_info_file_name = cfg['hlmdp_file_name']
-env_info_folder = os.path.abspath('../environments')
-env_info_str = os.path.join(env_info_folder, env_info_file_name)
-with open(env_info_str, 'rb') as f:
-    env_info = yaml.safe_load(f)
+# # Import the environment information
+env_info = load_env_info(cfg['hlmdp_file_name'])
 
 env_settings = {
     'time_scale' : 99.0,
@@ -29,68 +26,23 @@ env_settings = {
 
 env, side_channels = build_unity_env()
 
-prob_threshold = 0.95 # Desired probability of reaching the final goal
-training_iters = 5e4 # 5e4
-num_rollouts = 100 # 100
-n_steps_per_rollout = 600
-max_timesteps_per_component = 2e5
-
 # Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 
 load_folder_name = '2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed'
-save_learned_controllers = True
 
 experiment_name = 'gq_mission_20_subgoals'
 
-base_path = os.path.abspath(os.path.curdir)
-string_ind = base_path.find('src')
-assert(string_ind >= 0)
-base_path = base_path[0:string_ind + 4]
-base_path = os.path.join(base_path, 'examples/gq_robotics', 'data', 'saved_controllers')
+base_path = os.path.abspath(os.path.join('..', 'examples/gq_robotics', 'data', 'saved_controllers'))
 
-load_dir = os.path.join(base_path, load_folder_name)
+save_path = os.path.join(base_path, load_folder_name)
 
-if load_folder_name == '':
-    now = datetime.now()
-    dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-    rseed = int(now.time().strftime('%H%M%S'))
-    save_path = os.path.join(base_path, dt_string + '_' + experiment_name)
-else:
-    save_path = os.path.join(base_path, load_folder_name)
+# # Create the list of partially instantiated sub-systems
+controller_list = instantiate_controllers(env, env_settings=env_settings, load_dir=save_path)
 
-# Create the list of partially instantiated sub-systems
-controller_list = []
-
-if load_folder_name == '':
-    for i in range(env_info['N_A']):
-        controller_list.append(UnityController(i, env, env_settings=env_settings))
-else:
-    for controller_dir in os.listdir(load_dir):
-        controller_load_path = os.path.join(load_dir, controller_dir)
-        if os.path.isdir(controller_load_path):
-            controller = UnityController(0, env, load_dir=controller_load_path)
-            controller_list.append(controller)
-
-    # re-order the controllers by index
-    reordered_list = []
-    for i in range(len(controller_list)):
-        for controller in controller_list:
-            if controller.controller_ind == i:
-                reordered_list.append(controller)
-    controller_list = reordered_list
-
-# Create or load object to store the results
-if load_folder_name == '':
-    results = Results(controller_list, 
-                        env_settings, 
-                        prob_threshold, 
-                        training_iters, 
-                        num_rollouts, 
-                        random_seed=rseed)
-else:
-    results = Results(load_dir=load_dir)
-    rseed = results.data['random_seed']
+# Load object to store the results
+results = Results(load_dir=save_path)
+rseed = results.data['random_seed']
 
 import torch
 import random
