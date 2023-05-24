@@ -2,20 +2,20 @@
 # Run the labyrinth navigation experiment.
 import os, sys
 sys.path.append('../..')
-
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from environments.unity_env import build_unity_env
 import numpy as np
-from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_controller import UnityController
 import os, sys
 from datetime import datetime
 
 import torch
 import random
 
-# Setup and create the environment
+from config.pre_train_warthog_controller import cfg
 
+# Setup and create the environment
 env_settings = {
     'time_scale' : 99.0,
 }
@@ -24,62 +24,61 @@ env, side_channels = build_unity_env()
 side_channels['engine_config_channel'].set_configuration_parameters(
                                         time_scale=env_settings['time_scale'])
 
-training_iters = 1e6
-
 # Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 load_folder_name = ''
-save_learned_controllers = True
-
-experiment_name = 'pretrain_warthog_controller'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
 assert(string_ind >= 0)
 base_path = base_path[0:string_ind + 4]
-base_path = os.path.join(base_path, 'examples/gq_robotics', 'data', 'saved_controllers')
+base_path = cfg['log_settings']['base_save_dir']
 
-load_dir = os.path.join(base_path, load_folder_name)
-
-if load_folder_name == '':
+if cfg['load_folder_name'] == '':
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-    rseed = int(now.time().strftime('%H%M%S'))
-    save_path = os.path.join(base_path, dt_string + '_' + experiment_name)
+    save_path = os.path.join(base_path, dt_string + '_' + cfg['experiment_name'])
+    tensorboard_log = os.path.join(
+        cfg['log_settings']['base_tensorboard_logdir'],
+        dt_string + '_' + cfg['experiment_name']
+    )
 else:
     save_path = os.path.join(base_path, load_folder_name)
+    tensorboard_log = os.path.join(
+        cfg['log_settings']['base_tensorboard_logdir'],
+        load_folder_name
+    )
 
-if save_learned_controllers and not os.path.isdir(save_path):
+if not os.path.isdir(save_path):
     os.mkdir(save_path)
 
 # Create the list of partially instantiated sub-systems
-base_tensorboard_folder = './tensorboard/'
+
 
 if load_folder_name == '':
-    controller = UnityLabyrinthController(
+    controller = UnityController(
         0,
         env,
         env_settings=env_settings,
-        verbose=True,
-        tensorboard_log=base_tensorboard_folder + 'pretrained_controller',
+        verbose=cfg['log_settings']['verbose'],
+        tensorboard_log=tensorboard_log,
     )
 else:
     controller_dir = 'pretrained_controller'
-    controller_load_path = os.path.join(load_dir, controller_dir)
-    controller = UnityLabyrinthController(
+    controller_load_path = os.path.join(save_path, controller_dir)
+    controller = UnityController(
                 0, 
                 env, 
                 load_dir=controller_load_path, 
-                verbose=True
+                verbose=cfg['log_settings']['verbose'],
+                tensorboard_log=tensorboard_log,
             )
 
-rseed = int(now.time().strftime('%H%M%S'))
+torch.manual_seed(cfg['rseed'])
+random.seed(cfg['rseed'])
+np.random.seed(cfg['rseed'])
 
-torch.manual_seed(rseed)
-random.seed(rseed)
-np.random.seed(rseed)
-
-print('Random seed: {}'.format(rseed))
+print('Random seed: {}'.format(cfg['rseed']))
 
 # Save learned controller
 controller_save_path = \
@@ -98,7 +97,7 @@ checkpoint_callback = CheckpointCallback(
 print('Training controller')
 controller.learn(
     side_channels['custom_side_channel'], 
-    total_timesteps=training_iters,
+    total_timesteps=cfg['training_iters'],
     callback=checkpoint_callback
 )
 print('Completed training controller')

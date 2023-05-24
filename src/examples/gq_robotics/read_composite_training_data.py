@@ -6,7 +6,7 @@ sys.path.append('../..')
 
 from environments.unity_env import build_unity_env
 import numpy as np
-from controllers.unity_labyrinth_controller import UnityLabyrinthController
+from controllers.unity_controller import UnityController
 from controllers.unity_meta_controller import MetaController
 import pickle
 from datetime import datetime
