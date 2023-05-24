@@ -6,10 +6,12 @@ from datetime import datetime
 import pickle
 from utils.observers import ObserverIncrementTaskSuccessCount
 
+from typing import Optional
+
 class UnityController(object):
     """
     Class representing PPO-based controllers that learn to accomplish 
-    goal-oriented sub-tasks within the unity labyrinth gym environment.
+    goal-oriented sub-tasks within the unity gym environment.
     """
 
     def __init__(self, 
@@ -18,8 +20,8 @@ class UnityController(object):
                 env_settings=None, 
                 max_training_steps=1e6, 
                 load_dir=None, 
-                verbose=False,
-                tensorboard_log=None):
+                verbose : Optional[bool] = None,
+                tensorboard_log : Optional[str] = None):
         
         self.controller_ind = controller_ind
         self.env_settings = env_settings
@@ -35,6 +37,12 @@ class UnityController(object):
 
         if load_dir is None:
             assert env_settings is not None
+
+            # If no verbose argument is provided, and the user is 
+            # instantiating a new controller, set the argument to False.
+            if verbose is None:
+                self.verbose = False
+            
             self._init_learning_alg(
                 env, 
                 verbose=self.verbose,
@@ -169,13 +177,18 @@ class UnityController(object):
             'env_settings' : self.env_settings,
             'verbose' : self.verbose,
             'max_training_steps' : self.max_training_steps,
+            'tensorboard_log' : self.tensorboard_log,
             'data' : self.data,
         }
 
         with open(controller_file, 'wb') as pickleFile:
             pickle.dump(controller_data, pickleFile)
 
-    def load(self, env, save_dir):
+    def load(
+            self, 
+            env, 
+            save_dir, 
+        ):
         """
         Load a controller object
 
@@ -194,21 +207,19 @@ class UnityController(object):
         self.controller_ind = controller_data['controller_ind']
         self.env_settings = controller_data['env_settings']
         self.max_training_steps = controller_data['max_training_steps']
-        self.verbose = controller_data['verbose']
         self.data = controller_data['data']
+        # self.tensorboard_log = controller_data['tensorboard_log']
+
+        if self.verbose is None:
+            self.verbose = controller_data['verbose']
 
         model_file = os.path.join(save_dir, 'model')
-        self.model = PPO.load(model_file, env=env)
+        self.model = PPO.load(model_file, env=env, verbose=self.verbose, tensorboard_log=self.tensorboard_log)
 
     def get_success_prob(self):
         # Return the most recently estimated probability of success
         max_total_training_steps = np.max(list(self.data['performance_estimates'].keys()))
         return np.copy(self.data['performance_estimates'][max_total_training_steps]['success_rate'])
-
-    # def _set_training_env(self, env_settings):
-    #     self.training_env = Maze(**env_settings)
-    #     self.training_env.agent_start_states = self.init_states
-    #     self.training_env.goal_states = self.final_states
 
     def _init_learning_alg(self, env, verbose=False, tensorboard_log=None):
         self.model = PPO("MlpPolicy", 
