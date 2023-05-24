@@ -69,7 +69,7 @@ def instantiate_controllers(
             if tensorboard_log is None:
                 tensorboard_logdir = None
             else:
-                tensorboard_logdir = tensorboard_log + 'controller_{}'.format(i)
+                tensorboard_logdir = os.path.join(tensorboard_log , 'controller_{}'.format(i))
 
             controller_list.append(
                 UnityController(
@@ -88,7 +88,7 @@ def instantiate_controllers(
                 if tensorboard_log is None:
                     tensorboard_logdir = None
                 else:
-                    tensorboard_logdir = tensorboard_log + controller_dir
+                    tensorboard_logdir = os.path.join(tensorboard_log, controller_dir)
                 controller = UnityController(
                     0, 
                     env, 
@@ -114,7 +114,7 @@ def instantiate_controllers(
             if tensorboard_log is None:
                 tensorboard_logdir = None
             else:
-                tensorboard_logdir = tensorboard_log + 'controller_{}'.format(i)
+                tensorboard_logdir = os.path.join(tensorboard_log, 'controller_{}'.format(i))
 
             controller = UnityController(
                 0, 
