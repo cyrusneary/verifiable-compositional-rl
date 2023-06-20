@@ -10,13 +10,14 @@ from datetime import datetime
 from MDP.general_high_level_mdp import HLMDP
 from utils.results_saver import Results
 import yaml
+import pickle
 
 import torch
 import random
 
 from utils.loaders import instantiate_controllers, load_env_info
 
-from config.gq_20_subgoals_config import cfg
+from config.gq_2_subgoals_config import cfg
 
 # Setup and create the environment
 # Import the environment information (HLMDP Structure)
@@ -229,7 +230,7 @@ while reach_prob < cfg['icrl_parameters']['prob_threshold']:
     results.update_controllers(hlmdp.controller_list)
     results.update_composition_data(meta_success_rate, cfg['icrl_parameters']['num_rollouts'], policy, reach_prob)
     results.save(save_path)
-    
+
     print('Predicted success prob: {}, Empirical success prob: {}'.format(reach_prob, meta_success_rate))
 
 # Once the loop has been completed, construct a meta-controller and visualize its performance

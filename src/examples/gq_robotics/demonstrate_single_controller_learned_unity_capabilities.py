@@ -14,8 +14,9 @@ from tqdm import tqdm
 
 from stable_baselines3 import PPO
 
-experiment_name = '2023-05-20_16-32-24_pretrain_warthog_controller'
-num_steps = 2.8e5
+# experiment_name = '2023-05-20_16-32-24_pretrain_warthog_controller'
+experiment_name = '2023-06-18_18-56-48_single_gq_test_controller'
+num_steps = 6.3e5
 
 env_settings = {
     'time_scale' : 1.0,

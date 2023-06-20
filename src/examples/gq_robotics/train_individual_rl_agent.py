@@ -5,7 +5,7 @@ sys.path.append('../..')
 from datetime import datetime
 
 from environments.unity_env import build_unity_env
-import numpy as np
+import numpy as np  
 import pickle
 import os, sys
 from datetime import datetime

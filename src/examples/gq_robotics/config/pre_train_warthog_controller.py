@@ -3,7 +3,8 @@ import os
 base_path = os.path.abspath('/home/cyrusneary/Documents/research/code') # local machine
 
 cfg = {
-    'experiment_name' : 'pre_train_warthog_controller',
+    # 'experiment_name' : 'pre_train_warthog_controller',
+    'experiment_name' : 'single_gq_test_controller',
     'training_iters' : 1e7,
     'rseed' : 42,
     'load_folder_name' : '',

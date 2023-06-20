@@ -3,19 +3,19 @@ import os
 base_path = os.path.abspath('/home/cyrusneary/Documents/research/code') # local machine
 
 cfg = {
-    'experiment_name' : 'gq_mission_20_subgoals',
-    'hlmdp_file_name': 'gq_mission_20_subgoals.yaml',
+    'experiment_name' : 'gq_mission_2_subgoals',
+    'hlmdp_file_name': 'gq_mission_2_subgoals.yaml',
     'rseed' : 42,
     'icrl_parameters': {
         'prob_threshold': 0.9,
         'training_iters': 5e5,
         'num_rollouts': 100,
         'n_steps_per_rollout': 400,
-        'meta_controller_n_steps_per_rollout': 7 * 400,
+        'meta_controller_n_steps_per_rollout': 2 * 400,
         'max_timesteps_per_component': 1e7
     },
-    'controller_instantiation_method' : 'pre_trained', # ['new', 'load', 'pre_trained']
-    'load_folder_name' : '2023-05-20_16-32-24_pretrain_warthog_controller', #'2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed',
+    'controller_instantiation_method' : 'new', # ['new', 'load', 'pre_trained']
+    'load_folder_name' : '', #'2023-05-20_16-32-24_pretrain_warthog_controller', #'2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed',
     'log_settings' : {
         'verbose' : True,
         'base_save_dir' : 

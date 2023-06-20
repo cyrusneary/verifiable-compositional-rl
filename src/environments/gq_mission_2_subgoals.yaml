@@ -1,0 +1,9 @@
+N_S: 4 # Number of states INCLUDING the failure state
+N_A: 2
+s_i : 0
+s_goal : 2
+
+s_fail: -1
+successor_map:
+  "[0, 0]": 1 # [initial state, subtask index] : next state
+  "[1, 1]": 2
