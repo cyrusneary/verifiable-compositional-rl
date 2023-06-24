@@ -17,7 +17,7 @@ import random
 
 from utils.loaders import instantiate_controllers, load_env_info
 
-from config.gq_2_subgoals_config import cfg
+from examples.gq_robotics.config.gq_12_subgoals_config import cfg
 
 # Setup and create the environment
 # Import the environment information (HLMDP Structure)

@@ -1,7 +1,7 @@
 
 # Run the labyrinth navigation experiment.
 import os, sys
-sys.path.append('..')
+sys.path.append('../..')
 
 from stable_baselines3.common.callbacks import CheckpointCallback
 
@@ -16,13 +16,13 @@ import yaml
 import torch
 import random
 
-from examples.gq_robotics.config.gq_20_subgoals_config import cfg
+from examples.gq_robotics.config.gq_12_subgoals_config import cfg
 
 # Setup and create the environment
 
 # Import the environment information
 env_info_file_name = cfg['hlmdp_file_name']
-env_info_folder = os.path.abspath('../environments')
+env_info_folder = os.path.abspath('../../environments')
 env_info_str = os.path.join(env_info_folder, env_info_file_name)
 with open(env_info_str, 'rb') as f:
     env_info = yaml.safe_load(f)
@@ -75,7 +75,7 @@ base_tensorboard_folder = './tensorboard/'
 
 if load_folder_name == '':
     for i in range(env_info['N_A']):
-        tensorboard_folder = base_tensorboard_folder + 'controller_{}'.format(i)
+        tensorboard_folder = base_tensorboard_folder + dt_string + '_' + experiment_name + '/controller_{}'.format(i)
         controller_list.append(
             UnityController(
                 i, 
@@ -144,7 +144,10 @@ results.update_training_steps(0)
 results.update_controllers(controller_list)
 results.save(save_path)
 
-for controller_ind in range(len(controller_list)):
+# controllers_to_train = [0, 2, 4, 6, 11, 12] # range(0, len(controller_list))
+controllers_to_train = [10]
+
+for controller_ind in controllers_to_train:
     controller = controller_list[controller_ind]
 
     # Save learned controller
