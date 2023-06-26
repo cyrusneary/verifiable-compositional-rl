@@ -8,7 +8,7 @@ cfg = {
     'rseed' : 42,
     'icrl_parameters': {
         'prob_threshold': 0.9,
-        'training_iters': 5e5,
+        'training_iters': 1e6,
         'num_rollouts': 100,
         'n_steps_per_rollout': 400,
         'meta_controller_n_steps_per_rollout': 2 * 400,

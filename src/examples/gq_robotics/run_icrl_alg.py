@@ -1,6 +1,10 @@
 import os, sys
 sys.path.append('../..')
 
+from stable_baselines3.common.callbacks import \
+    CheckpointCallback, StopTrainingOnNoModelImprovement,\
+    EvalCallback
+
 from environments.unity_env import build_unity_env
 import numpy as np
 from controllers.unity_controller import UnityController
@@ -17,7 +21,7 @@ import random
 
 from utils.loaders import instantiate_controllers, load_env_info
 
-from examples.gq_robotics.config.gq_12_subgoals_config import cfg
+from examples.gq_robotics.config.gq_2_subgoals_config import cfg
 
 # Setup and create the environment
 # Import the environment information (HLMDP Structure)
@@ -124,8 +128,8 @@ for controller_ind in range(len(controller_list)):
     # Evaluate initial performance of controllers (they haven't learned 
     # anything yet so they will likely have no chance of success.)
     controller.eval_performance(env, 
-                                side_channels['custom_side_channel'], 
-                                n_episodes=1,
+                                side_channels['custom_side_channel'],
+                                n_episodes=cfg['icrl_parameters']['num_rollouts'],
                                 n_steps=cfg['icrl_parameters']['n_steps_per_rollout'])
     print('Controller {} achieved prob succes: {}'.format(controller_ind, 
                                                 controller.get_success_prob()))
@@ -197,14 +201,30 @@ while reach_prob < cfg['icrl_parameters']['prob_threshold']:
     largest_gap_ind = np.argmax(performance_gaps)
     controller_to_train = hlmdp.controller_list[largest_gap_ind]
 
+    no_model_improvement_callback = StopTrainingOnNoModelImprovement(
+        max_no_improvement_evals=10,
+        min_evals=10,
+        verbose=1
+    )
+
+    eval_callback = EvalCallback(
+        eval_env=env,
+        eval_freq=1e4,
+        callback_after_eval=no_model_improvement_callback,
+        verbose=1
+    )
+
+    callbacks = [eval_callback]
+
     # Train the sub-system and empirically evaluate its performance
     print('Training controller {}'.format(largest_gap_ind))
     controller_to_train.learn(side_channels['custom_side_channel'], 
-                                total_timesteps=cfg['icrl_parameters']['training_iters'])
+                                total_timesteps=cfg['icrl_parameters']['training_iters'],
+                                callback=callbacks)
     print('Completed training controller {}'.format(largest_gap_ind))
     controller_to_train.eval_performance(env, 
                                         side_channels['custom_side_channel'], 
-                                        n_episodes=cfg['icrl_parameters']['num_rollouts'] ,
+                                        n_episodes=cfg['icrl_parameters']['num_rollouts'],
                                         n_steps=cfg['icrl_parameters']['n_steps_per_rollout'])
 
     # Save learned controller

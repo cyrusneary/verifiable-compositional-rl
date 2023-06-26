@@ -14,7 +14,7 @@ import yaml
 
 from utils.loaders import instantiate_controllers, load_env_info
 
-from examples.gq_robotics.config.gq_12_subgoals_config import cfg
+from examples.gq_robotics.config.gq_2_subgoals_config import cfg
 
 # Setup and create the environment
 # # Import the environment information
@@ -31,7 +31,9 @@ env, side_channels = build_unity_env()
 
 # load_folder_name = '2023-05-19_19-17-47_gq_mission_20_subgoalstrain_all_controllers_completed'
 # load_folder_name = '2023-06-23_01-54-52_gq_mission_11_subgoals_linear3_angular1p5_left_route'
-load_folder_name = '2023-06-23_15-10-27_gq_mission_12_subgoals_composite_policy'
+# load_folder_name = '2023-06-23_15-10-27_gq_mission_12_subgoals_composite_policy'
+load_folder_name = '2023-06-25_20-36-20_gq_mission_2_subgoals'
+
 
 # experiment_name = 'gq_mission_20_subgoals'
 

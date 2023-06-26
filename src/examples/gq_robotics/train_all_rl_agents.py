@@ -3,7 +3,9 @@
 import os, sys
 sys.path.append('../..')
 
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import \
+    CheckpointCallback, StopTrainingOnNoModelImprovement,\
+    EvalCallback
 
 from environments.unity_env import build_unity_env
 import numpy as np
@@ -16,7 +18,7 @@ import yaml
 import torch
 import random
 
-from examples.gq_robotics.config.gq_12_subgoals_config import cfg
+from examples.gq_robotics.config.gq_40_subgoals_config import cfg
 
 # Setup and create the environment
 
@@ -145,7 +147,7 @@ results.update_controllers(controller_list)
 results.save(save_path)
 
 # controllers_to_train = [0, 2, 4, 6, 11, 12] # range(0, len(controller_list))
-controllers_to_train = [10]
+controllers_to_train = range(0, len(controller_list))
 
 for controller_ind in controllers_to_train:
     controller = controller_list[controller_ind]
@@ -163,12 +165,27 @@ for controller_ind in controllers_to_train:
         save_vecnormalize=False,
     )
 
+    no_model_improvement_callback = StopTrainingOnNoModelImprovement(
+        max_no_improvement_evals=5,
+        min_evals=10,
+        verbose=1
+    )
+
+    eval_callback = EvalCallback(
+        eval_env=env,
+        eval_freq=1e4,
+        callback_after_eval=no_model_improvement_callback,
+        verbose=1
+    )
+
+    callbacks = [checkpoint_callback, eval_callback]
+
     # Train the sub-system and empirically evaluate its performance
     print('Training controller {}'.format(controller_ind))
     controller.learn(
         side_channels['custom_side_channel'], 
         total_timesteps=training_iters,
-        callback=checkpoint_callback
+        callback=callbacks
     )
     print('Completed training controller {}'.format(controller_ind))
     controller.eval_performance(env, 
