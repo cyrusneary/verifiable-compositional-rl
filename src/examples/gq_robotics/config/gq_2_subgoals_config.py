@@ -7,7 +7,7 @@ cfg = {
     'hlmdp_file_name': 'gq_mission_2_subgoals.yaml',
     'rseed' : 42,
     'icrl_parameters': {
-        'prob_threshold': 0.9,
+        'prob_threshold': 0.95,
         'training_iters': 1e6,
         'num_rollouts': 100,
         'n_steps_per_rollout': 400,
