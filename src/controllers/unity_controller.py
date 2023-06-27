@@ -69,10 +69,16 @@ class UnityController(object):
         # Set the environment to the appropriate subtask
         sub_task_string = '{},{}'.format(self.controller_ind, self.controller_ind)
         side_channel.send_string(sub_task_string)
+        
+        environment_mode_str = 'training_mode'
+        side_channel.send_string(environment_mode_str)
 
         self.model.learn(total_timesteps=total_timesteps, callback=callback)
         self.data['total_training_steps'] = self.data['total_training_steps'] \
                                                         + total_timesteps
+                                                        
+        environment_mode_str = 'testing_mode'
+        side_channel.send_string(environment_mode_str)
 
     def predict(self, obs, deterministic=True):
         """
