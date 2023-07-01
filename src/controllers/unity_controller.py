@@ -219,7 +219,12 @@ class UnityController(object):
         if self.verbose is None:
             self.verbose = controller_data['verbose']
 
+        # if os.path.isfile(os.path.join(save_dir, 'best_model.zip')):
+        #     model_file = os.path.join(save_dir, 'best_model')
+        #     print('Loading best model')
+        # else:
         model_file = os.path.join(save_dir, 'model')
+            # print('loading model')
         self.model = PPO.load(model_file, env=env, verbose=self.verbose, tensorboard_log=self.tensorboard_log)
 
     def get_success_prob(self):

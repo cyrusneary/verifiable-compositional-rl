@@ -20,14 +20,14 @@ experiment_name = 'unity_labyrinth'
 load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
 experiment_name = 'minigrid_pixel_labyrinth'
 
-load_folder_name = '2023-05-10_21-57-17_gq_mission_20_subgoals'
-experiment_name = 'gq_mission_20_subgoals'
+load_folder_name = '2023-06-28_13-53-29_gq_mission_12_subgoals_composite_policy_left_penalized_turns'
+experiment_name = 'gq_mission_12_subgoals'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
 assert(string_ind >= 0)
 base_path = base_path[0:string_ind + 4]
-base_path = os.path.join(base_path, 'data', 'saved_controllers')
+base_path = os.path.join(base_path, 'examples', 'gq_robotics', 'data', 'saved_controllers')
 
 load_dir = os.path.join(base_path, load_folder_name)
 
@@ -73,8 +73,10 @@ ax.set_ylim(yl)
         
 # plt.show()
 
-save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.tex')
-tikzplotlib.save(save_path)
+plt.savefig(os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.png'), dpi=300)
+
+# save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.tex')
+# tikzplotlib.save(save_path)
 
 
 # %%

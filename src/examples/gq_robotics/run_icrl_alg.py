@@ -21,7 +21,7 @@ import random
 
 from utils.loaders import instantiate_controllers, load_env_info
 
-from examples.gq_robotics.config.gq_2_subgoals_config import cfg
+from examples.gq_robotics.config.gq_12_subgoals_config import cfg
 
 # Setup and create the environment
 # Import the environment information (HLMDP Structure)
@@ -202,8 +202,8 @@ while reach_prob < cfg['icrl_parameters']['prob_threshold']:
     controller_to_train = hlmdp.controller_list[largest_gap_ind]
 
     no_model_improvement_callback = StopTrainingOnNoModelImprovement(
-        max_no_improvement_evals=10,
-        min_evals=10,
+        max_no_improvement_evals=70,
+        min_evals=30,
         verbose=1
     )
 
@@ -211,7 +211,8 @@ while reach_prob < cfg['icrl_parameters']['prob_threshold']:
         eval_env=env,
         eval_freq=1e4,
         callback_after_eval=no_model_improvement_callback,
-        verbose=1
+        verbose=1,
+        best_model_save_path=controller_save_path,
     )
 
     callbacks = [eval_callback]
