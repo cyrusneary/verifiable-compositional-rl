@@ -36,12 +36,12 @@ class Maze(MiniGridEnv):
             and takes another action instead.
         """
 
-        size = 20
+        size = 25
         width = size
         height = size
 
         self.agent_start_states = agent_start_states
-        self.goal_states = [(1, height - 2, 0), (1, height - 2, 1), (1, height - 2, 2), (1, height - 2, 3)]
+        self.goal_states = [(width - 2, 1, 0), (width - 2, 1, 1), (width - 2, 1, 2), (width - 2, 1, 3)]
 
         super().__init__(
             grid_size=size,
@@ -70,32 +70,53 @@ class Maze(MiniGridEnv):
         self.grid.wall_rect(0, 0, width, height)
         
         # Generate the rooms
-        self.grid.wall_rect(0, 0, 6, 6)
-        self.grid.wall_rect(5, 0, 15, 6)
-        self.grid.wall_rect(8, 5, 6, 11)
-        self.grid.wall_rect(13, 5, 7, 11)
-        self.grid.wall_rect(0, 5, 9, 6)
-        self.grid.wall_rect(0, 10, 9, 6)
+        self.grid.wall_rect(0, 0, 25, 25)
+        self.grid.horz_wall(4, 4, 8, obj_type=Wall)
+        self.grid.horz_wall(4, 5, 1, obj_type=Wall)
+        self.grid.horz_wall(10, 5, 1, obj_type=Wall)
+        self.grid.horz_wall(4, 7, 1, obj_type=Wall)
+        self.grid.horz_wall(10, 7, 1, obj_type=Wall)
+        self.grid.wall_rect(4, 8, 7, 3)
+        self.grid.horz_wall(4, 11, 1, obj_type=Wall)
+        self.grid.horz_wall(10, 11, 2, obj_type=Wall)
+        self.grid.horz_wall(1, 13, 1, obj_type=Wall)
+        self.grid.horz_wall(3, 13, 2, obj_type=Wall)
+        self.grid.horz_wall(10, 13, 1, obj_type=Wall)
+        self.grid.wall_rect(4, 14, 7, 7)
+        self.grid.horz_wall(11, 20, 1, obj_type=Wall)
+        self.grid.horz_wall(13, 1, 1, obj_type=Wall)
+        self.grid.vert_wall(13, 3, 2, obj_type=Wall)
+        self.grid.horz_wall(13, 11, 2, obj_type=Wall)
+        self.grid.vert_wall(13, 20, 2, obj_type=Wall)
+        self.grid.horz_wall(13, 23, 1, obj_type=Wall)
+        self.grid.wall_rect(14, 4, 7, 7)
+        self.grid.wall_rect(14, 14, 7, 7)
+        self.grid.horz_wall(14, 13, 1, obj_type=Wall)
+        self.grid.horz_wall(20, 13, 1, obj_type=Wall)
+        self.grid.horz_wall(20, 11, 2, obj_type=Wall)
+        self.grid.horz_wall(23, 11, 1, obj_type=Wall)
 
-        # Add doors
-        self.put_obj(Door('grey', is_open=True), 3, 5)
-        self.put_obj(Door('grey', is_open=True), 5, 2)
-        self.put_obj(Door('grey', is_open=True), 10, 5)
-        self.put_obj(Door('grey', is_open=True), 14, 5)
-        self.put_obj(Door('grey', is_open=True), 5, 10)
-        self.put_obj(Door('grey', is_open=True), 3, 15)
-        self.put_obj(Door('grey', is_open=True), 16, 15)
+        # Add doors (TO DO)
+        # self.put_obj(Door('grey', is_open=True), 3, 5)
+        # self.put_obj(Door('grey', is_open=True), 5, 2)
+        # self.put_obj(Door('grey', is_open=True), 10, 5)
+        # self.put_obj(Door('grey', is_open=True), 14, 5)
+        # self.put_obj(Door('grey', is_open=True), 5, 10)
+        # self.put_obj(Door('grey', is_open=True), 3, 15)
+        # self.put_obj(Door('grey', is_open=True), 16, 15)
 
         # Place a goal square
         for goal_state in self.goal_states:
             # self.put_obj(Goal(), goal_state[0], goal_state[1])
-            self.put_obj(Goal(), 1, height - 2)
+            self.put_obj(Goal(), width-2, 1)
         
         # Place dangerous lava
-        self.grid.horz_wall(2, 7, 3, obj_type=Lava)
-        self.grid.horz_wall(6, 8, 2, obj_type=Lava)
-        self.grid.horz_wall(3, 12, 2, obj_type=Lava)
-        self.grid.horz_wall(6, 14, 2, obj_type=Lava)
+        self.grid.horz_wall(1, 1, 3, obj_type=Lava)
+        self.grid.horz_wall(1, 2, 3, obj_type=Lava)
+        self.grid.horz_wall(1, 3, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 11, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 12, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 13, 3, obj_type=Lava)
 
         # Place the agent
         if self.agent_start_states:
