@@ -40,8 +40,6 @@ class MetaController(object):
 
         obs_in_abstract_state = False
 
-        print(state)
-        print(self.state_list)
         for env_state_set in self.state_list:
             if isinstance(env_state_set, list) and state in env_state_set:
                 high_level_state = self.state_list.index(env_state_set)
