@@ -19,7 +19,7 @@ import time
 
 # %% Setup and create the environment
 env_settings = {
-    'agent_start_states' : [(1,23,0)],
+    'agent_start_states' : [(1,23,1)],
     'slip_p' : 0.1,
 }
 
