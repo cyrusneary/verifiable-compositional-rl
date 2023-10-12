@@ -17,7 +17,7 @@ from utils.results_saver import Results
 
 # %% Setup and create the environment
 env_settings = {
-    'agent_start_states' : [(1,1,0)],
+    'agent_start_states' : [(1,23,1)],
     'slip_p' : 0.1,
 }
 
@@ -62,61 +62,91 @@ controller_list = []
 
 if load_folder_name == '':
 
-    # TO Do
-    # First room controllers
-    initial_states = [(1,1,0)]
-    final_states = [(3,5,0)]
+    # Top left L-shape room controllers
+    initial_states = [(2,13,0)]
+    final_states = [(13,2,0)]   # to top right room
     controller_list.append(MiniGridController(0, initial_states, final_states, env_settings))
 
-    initial_states = [(1,1,0)]
-    final_states = [(5,2,1)]
+    initial_states = [(2,13,0)]
+    final_states = [(12,4,1)]   # to top middle room
     controller_list.append(MiniGridController(1, initial_states, final_states, env_settings))
 
-    # Top long room controllers
-    initial_states = [(5,2,1)]
-    final_states = [(10,5,1)]
+    initial_states = [(2,13,0)]
+    final_states = [(4,6,1)]    # to top left middle room
     controller_list.append(MiniGridController(2, initial_states, final_states, env_settings))
-
-    initial_states = [(5,2,1)]
-    final_states = [(14,5,1)]
+    
+    initial_states = [(2,13,0)]
+    final_states = [(4,12,1)]   # to middle left room
     controller_list.append(MiniGridController(3, initial_states, final_states, env_settings))
-
-    # Left room controllers
-    initial_states = [(3,5,0)]
-    final_states = [(5,10,1)]
+    
+    # Top right L-shape room controllers
+    initial_states = [(13,2,0)]
+    final_states = env.goal_states 
     controller_list.append(MiniGridController(4, initial_states, final_states, env_settings))
 
-    initial_states = [(5,10,1)]
-    final_states = [(3,15,1)]
+    initial_states = [(22,11,1)] 
+    final_states = env.goal_states
     controller_list.append(MiniGridController(5, initial_states, final_states, env_settings))
 
-    # Middle room controllers
-    initial_states = [(10,5,1)]
-    final_states = [(10,13,1)]
+    # Left top middle room controllers
+    initial_states = [(4,6,1)]
+    final_states = [(10,6,1)]
     controller_list.append(MiniGridController(6, initial_states, final_states, env_settings))
 
-    initial_states = [(10,13,1)]
-    final_states = [(10,5,3)]
+    # Left Middle room controllers
+    initial_states = [(4,12,1)]
+    final_states = [(10,12,1)]
     controller_list.append(MiniGridController(7, initial_states, final_states, env_settings))
 
-    # Right room controllers
-    initial_states = [(14,5,1)]
-    final_states = [(16,15,1)]
+    initial_states = [(10,12,1)]
+    final_states = [(4,12,1)]
     controller_list.append(MiniGridController(8, initial_states, final_states, env_settings))
-
-    # Bottom room controllers
-    initial_states = [(3,15,1)]
-    final_states = env.goal_states
+    
+    # Middle top room controllers
+    initial_states = [(12,11,1)]
+    final_states = [(12,4,1)]
     controller_list.append(MiniGridController(9, initial_states, final_states, env_settings))
 
-    initial_states = [(16,15,1)]
-    final_states = [(10,17,2)]
+    initial_states = [(10,6,1)]
+    final_states = [(12,4,1)]
     controller_list.append(MiniGridController(10, initial_states, final_states, env_settings))
 
-    initial_states = [(10,17,2)]
-    final_states = env.goal_states
+    # Middle Bottom room controllers
+    initial_states = [(12,20,1)]
+    final_states = [(12,11,1)]   # to above
     controller_list.append(MiniGridController(11, initial_states, final_states, env_settings))
 
+    initial_states = [(12,20,1)]
+    final_states = [(10,12,1)]   # to left
+    controller_list.append(MiniGridController(12, initial_states, final_states, env_settings))
+
+    initial_states = [(12,20,1)]
+    final_states = [(14,12,1)]  # to right
+    controller_list.append(MiniGridController(13, initial_states, final_states, env_settings))
+    
+    # Right middle room controllers 
+    initial_states = [(14,12,1)]
+    final_states = [(20,12,1)]
+    controller_list.append(MiniGridController(14, initial_states, final_states, env_settings))
+
+    # Bottom left L-shape room controllers 
+    initial_states = [(1,23,1)]
+    final_states = [(2,13,0)] # go above
+    controller_list.append(MiniGridController(15, initial_states, final_states, env_settings))
+    
+    initial_states = [(1,23,1)]
+    final_states = [(13,22,0)] # go right
+    controller_list.append(MiniGridController(16, initial_states, final_states, env_settings))
+    
+    # Bottom right L-shape room controllers 
+    initial_states = [(13,22,0)]
+    final_states = [(22,11,1)] # go above
+    controller_list.append(MiniGridController(17, initial_states, final_states, env_settings))
+    
+    initial_states = [(20,12,1)]
+    final_states = [(22,11,1)] 
+    controller_list.append(MiniGridController(18, initial_states, final_states, env_settings))
+    
 else:
     for controller_dir in os.listdir(load_dir):
         controller_load_path = os.path.join(load_dir, controller_dir)
@@ -172,7 +202,7 @@ results.save(save_path)
 # %%
 
 # Construct high-level MDP and solve for the max reach probability
-hlmdp = HLMDP([(1,1,0)], env.goal_states, controller_list)
+hlmdp = HLMDP([(1,23,1)], env.goal_states, controller_list)
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
 # Construct a meta-controller and emprirically evaluate it.
@@ -191,6 +221,8 @@ while reach_prob < prob_threshold:
 
     # Solve the HLM biliniear program to automatically optain sub-task specifications.
     optimistic_policy, required_reach_probs, optimistic_reach_prob, feasible_flag = hlmdp.solve_low_level_requirements_action(prob_threshold, max_timesteps_per_component=max_timesteps_per_component)
+
+    print(required_reach_probs)
 
     if not feasible_flag:
         print(required_reach_probs)
