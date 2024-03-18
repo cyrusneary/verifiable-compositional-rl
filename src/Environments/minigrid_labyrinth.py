@@ -70,31 +70,46 @@ class Maze(MiniGridEnv):
         self.grid.wall_rect(0, 0, width, height)
         
         # Generate the rooms
-        self.grid.wall_rect(0, 0, 25, 25)
-        self.grid.horz_wall(4, 4, 8, obj_type=Wall)
-        self.grid.horz_wall(4, 5, 1, obj_type=Wall)
-        self.grid.horz_wall(10, 5, 1, obj_type=Wall)
-        self.grid.horz_wall(4, 7, 1, obj_type=Wall)
-        self.grid.horz_wall(10, 7, 1, obj_type=Wall)
-        self.grid.wall_rect(4, 8, 7, 3)
-        self.grid.horz_wall(4, 11, 1, obj_type=Wall)
-        self.grid.horz_wall(10, 11, 2, obj_type=Wall)
-        self.grid.horz_wall(1, 13, 1, obj_type=Wall)
-        self.grid.horz_wall(3, 13, 2, obj_type=Wall)
-        self.grid.horz_wall(10, 13, 1, obj_type=Wall)
-        self.grid.wall_rect(4, 14, 7, 7)
-        self.grid.horz_wall(11, 20, 1, obj_type=Wall)
-        self.grid.horz_wall(13, 1, 1, obj_type=Wall)
-        self.grid.vert_wall(13, 3, 2, obj_type=Wall)
-        self.grid.horz_wall(13, 11, 2, obj_type=Wall)
-        self.grid.vert_wall(13, 20, 2, obj_type=Wall)
-        self.grid.horz_wall(13, 23, 1, obj_type=Wall)
-        self.grid.wall_rect(14, 4, 7, 7)
-        self.grid.wall_rect(14, 14, 7, 7)
-        self.grid.horz_wall(14, 13, 1, obj_type=Wall)
-        self.grid.horz_wall(20, 13, 1, obj_type=Wall)
-        self.grid.horz_wall(20, 11, 2, obj_type=Wall)
-        self.grid.horz_wall(23, 11, 1, obj_type=Wall)
+        self.grid.wall_rect(1, 1, 23, 23)
+
+        self.grid.horz_wall(3, 3, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 4, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 5, 9, obj_type=Wall)
+
+        self.grid.horz_wall(3, 7, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 8, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 9, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 10, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 11, 9, obj_type=Wall)
+
+        self.grid.horz_wall(3, 13, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 14, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 15, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 16, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 17, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 18, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 19, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 20, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 21, 9, obj_type=Wall)
+
+        self.grid.horz_wall(13, 3, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 4, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 5, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 7, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 8, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 9, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 10, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 11, 9, obj_type=Wall)
+
+        self.grid.horz_wall(13, 13, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 14, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 15, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 16, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 17, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 18, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 19, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 20, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 21, 9, obj_type=Wall)
 
         # Add doors (TO DO)
         # self.put_obj(Door('grey', is_open=True), 3, 5)
@@ -111,12 +126,14 @@ class Maze(MiniGridEnv):
             self.put_obj(Goal(), width-2, 1)
         
         # Place dangerous lava
+        '''
         self.grid.horz_wall(1, 1, 3, obj_type=Lava)
         self.grid.horz_wall(1, 2, 3, obj_type=Lava)
         self.grid.horz_wall(1, 3, 3, obj_type=Lava)
         self.grid.horz_wall(16, 11, 3, obj_type=Lava)
         self.grid.horz_wall(16, 12, 3, obj_type=Lava)
         self.grid.horz_wall(16, 13, 3, obj_type=Lava)
+        '''
 
         # Place the agent
         if self.agent_start_states:
