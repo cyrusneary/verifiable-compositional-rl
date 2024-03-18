@@ -15,21 +15,25 @@ import os, sys
 from datetime import datetime
 from MDP.high_level_mdp import HLMDP
 from utils.results_saver import Results
+import time
 
 # %% Setup and create the environment
 env_settings = {
-    'agent_start_states' : [(1,1,0)],
+    'agent_start_states' : [(1,23,1)],
     'slip_p' : 0.1,
 }
 
 env = Maze(**env_settings)
+
+# env.render(highlight=False)
+# time.sleep(5)
 
 num_rollouts = 5
 meta_controller_n_steps_per_rollout = 500
 
 # %% Set the load directory (if loading pre-trained sub-systems) or create a new directory in which to save results
 
-load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
+load_folder_name = '2023-10-12_13-13-22_minigrid_labyrinth'
 save_learned_controllers = True
 
 experiment_name = 'minigrid_labyrinth'
@@ -59,7 +63,7 @@ for i in range(len(controller_list)):
 controller_list = reordered_list
 
 # Construct high-level MDP and solve for the max reach probability
-hlmdp = HLMDP([(1,1,0)], env.goal_states, controller_list)
+hlmdp = HLMDP([(1,23,1)], env.goal_states, controller_list)
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
 
 # Construct a meta-controller and emprirically evaluate it.

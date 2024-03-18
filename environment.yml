@@ -12,8 +12,9 @@ dependencies:
   - tikzplotlib
   - pip
   - pip:
-    - gym-minigrid
+    - gym-minigrid==1.0.3 # Need this specific package and version (different from minigrid)
     - stable-baselines3
+    - torch==2.1.0 # Works for NVIDIA GPUs upto sm_83 architecture
     - mlagents==0.27.0
     - gym-unity
     - cvxpy
