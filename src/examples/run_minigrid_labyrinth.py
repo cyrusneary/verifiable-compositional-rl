@@ -62,90 +62,104 @@ controller_list = []
 
 if load_folder_name == '':
 
-    # Top left L-shape room controllers
-    initial_states = [(2,13,0)]
-    final_states = [(13,2,0)]   # to top right room
+    # Top left L-shape room #1
+    initial_states = [(2,6,0)]
+    final_states = [(12,2,0)]   
     controller_list.append(MiniGridController(0, initial_states, final_states, env_settings))
 
-    initial_states = [(2,13,0)]
-    final_states = [(12,4,1)]   # to top middle room
+    initial_states = [(12,2,0)]
+    final_states = [(2,6,0)]  
     controller_list.append(MiniGridController(1, initial_states, final_states, env_settings))
 
-    initial_states = [(2,13,0)]
-    final_states = [(4,6,1)]    # to top left middle room
+    # Top right L-shape room #2
+    initial_states = [(12,2,0)]
+    final_states = [(22,12,0)]    
     controller_list.append(MiniGridController(2, initial_states, final_states, env_settings))
     
-    initial_states = [(2,13,0)]
-    final_states = [(4,12,1)]   # to middle left room
+    initial_states = [(22,12,0)]
+    final_states = [(12,2, 0)]   
     controller_list.append(MiniGridController(3, initial_states, final_states, env_settings))
     
-    # Top right L-shape room controllers
-    initial_states = [(13,2,0)]
-    final_states = env.goal_states 
+    # middle top room #3
+    initial_states = [(12,2,0)]
+    final_states = [(12,6,0)]   
     controller_list.append(MiniGridController(4, initial_states, final_states, env_settings))
 
-    initial_states = [(22,11,1)] 
-    final_states = env.goal_states
+    initial_states = [(12,6,0)] 
+    final_states = [(12,2, 0)]   
     controller_list.append(MiniGridController(5, initial_states, final_states, env_settings))
 
-    # Left top middle room controllers
-    initial_states = [(4,6,1)]
-    final_states = [(10,6,1)]
+    # Left top middle room #4 
+    initial_states = [(2,6,0)]
+    final_states = [(12,6,0)]
     controller_list.append(MiniGridController(6, initial_states, final_states, env_settings))
 
-    # Left Middle room controllers
-    initial_states = [(4,12,1)]
-    final_states = [(10,12,1)]
+    initial_states = [(12,6,0)]
+    final_states = [(2,6,0)]
     controller_list.append(MiniGridController(7, initial_states, final_states, env_settings))
 
-    initial_states = [(10,12,1)]
-    final_states = [(4,12,1)]
+    # Left middle room #5 
+    initial_states = [(2,6,0)]
+    final_states = [(2,12,0)]
     controller_list.append(MiniGridController(8, initial_states, final_states, env_settings))
     
-    # Middle top room controllers
-    initial_states = [(12,11,1)]
-    final_states = [(12,4,1)]
+    initial_states = [(2,12,0)]
+    final_states = [(2,6,0)]
     controller_list.append(MiniGridController(9, initial_states, final_states, env_settings))
 
-    initial_states = [(10,6,1)]
-    final_states = [(12,4,1)]
+    # Middle middle room #6 
+    initial_states = [(12,6,0)]
+    final_states = [(12,12,0)]
     controller_list.append(MiniGridController(10, initial_states, final_states, env_settings))
 
-    # Middle Bottom room controllers
-    initial_states = [(12,20,1)]
-    final_states = [(12,11,1)]   # to above
+    initial_states = [(12,12,0)]
+    final_states = [(12,6,0)]   
     controller_list.append(MiniGridController(11, initial_states, final_states, env_settings))
 
-    initial_states = [(12,20,1)]
-    final_states = [(10,12,1)]   # to left
+    # Middle middle room #7 
+    initial_states = [(2,12,0)]
+    final_states = [(12,12,0)]   
     controller_list.append(MiniGridController(12, initial_states, final_states, env_settings))
 
-    initial_states = [(12,20,1)]
-    final_states = [(14,12,1)]  # to right
+    initial_states = [(12,12,0)]
+    final_states = [(2,12,0)]  
     controller_list.append(MiniGridController(13, initial_states, final_states, env_settings))
     
-    # Right middle room controllers 
-    initial_states = [(14,12,1)]
-    final_states = [(20,12,1)]
+    # Right middle room #8
+    initial_states = [(12,12,0)]
+    final_states = [(22,12,0)]
     controller_list.append(MiniGridController(14, initial_states, final_states, env_settings))
 
-    # Bottom left L-shape room controllers 
-    initial_states = [(1,23,1)]
-    final_states = [(2,13,0)] # go above
+    initial_states = [(22,12,0)]
+    final_states = [(12,12,0)]
     controller_list.append(MiniGridController(15, initial_states, final_states, env_settings))
-    
-    initial_states = [(1,23,1)]
-    final_states = [(13,22,0)] # go right
+
+    # Bottom left L-shape room #9
+    initial_states = [(2,12,0)]
+    final_states = [(12,22,0)] 
     controller_list.append(MiniGridController(16, initial_states, final_states, env_settings))
     
-    # Bottom right L-shape room controllers 
-    initial_states = [(13,22,0)]
-    final_states = [(22,11,1)] # go above
+    initial_states = [(12,22,0)]
+    final_states = [(2,12,0)] 
     controller_list.append(MiniGridController(17, initial_states, final_states, env_settings))
     
-    initial_states = [(20,12,1)]
-    final_states = [(22,11,1)] 
+    # Bottom middle room #10 
+    initial_states = [(12,12,0)]
+    final_states = [(12,22,0)] 
     controller_list.append(MiniGridController(18, initial_states, final_states, env_settings))
+    
+    initial_states = [(12,22,0)]
+    final_states = [(12,12,0)] 
+    controller_list.append(MiniGridController(19, initial_states, final_states, env_settings))
+
+    # Bottom right L-shape room #11 
+    initial_states = [(22,12,0)]
+    final_states = [(12,22,0)] 
+    controller_list.append(MiniGridController(20, initial_states, final_states, env_settings))
+    
+    initial_states = [(12,22,0)]
+    final_states = [(22,12,0)] 
+    controller_list.append(MiniGridController(21, initial_states, final_states, env_settings))
     
 else:
     for controller_dir in os.listdir(load_dir):
@@ -223,6 +237,7 @@ while reach_prob < prob_threshold:
     optimistic_policy, required_reach_probs, optimistic_reach_prob, feasible_flag = hlmdp.solve_low_level_requirements_action(prob_threshold, max_timesteps_per_component=max_timesteps_per_component)
 
     print(required_reach_probs)
+
 
     if not feasible_flag:
         print(required_reach_probs)
