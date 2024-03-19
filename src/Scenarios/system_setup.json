@@ -1,0 +1,10 @@
+{
+    "id": 24,
+    "parameters": {
+        "initial_location": {
+         	"x":   -125.0,
+                "y":   8.0
+	},
+	"camera_radius" : 3
+    }
+}

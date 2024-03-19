@@ -1,5 +1,5 @@
 {
-    "scenario_id": "AS0024",
+    "scenario_id": "AS0026",
     "mission_class": "Area Search",
     "scenario_objective": {
         "objective_name": "locate static target",
