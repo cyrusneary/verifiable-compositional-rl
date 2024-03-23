@@ -21,7 +21,8 @@ class Maze(MiniGridEnv):
 
     def __init__(
         self,
-        agent_start_states = [(1,23,1)],
+        # left bottom
+        agent_start_states = [(2,2,0)],
         slip_p=0.0,
     ):
 
@@ -41,7 +42,8 @@ class Maze(MiniGridEnv):
         height = size
 
         self.agent_start_states = agent_start_states
-        self.goal_states = [(width - 2, 1, 0), (width - 2, 1, 1), (width - 2, 1, 2), (width - 2, 1, 3)]
+        # left top
+        self.goal_states = [(2,22,0)]
 
         super().__init__(
             grid_size=size,

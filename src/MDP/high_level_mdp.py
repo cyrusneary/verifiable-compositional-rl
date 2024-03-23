@@ -257,6 +257,10 @@ class HLMDP(object):
         for s in self.S:
             for a in avail_actions[s]:
                 state_act_vars[s,a]=linear_model.addVar(lb=0,name="state_act_"+str(s)+"_"+str(a))
+                #liuc
+                print(s)
+                print(a) 
+                print(state_act_vars[s,a])
 
         #gurobi updates model
         linear_model.update()
@@ -297,6 +301,10 @@ class HLMDP(object):
             # Construct the policy from the occupancy variables
             policy = np.zeros((self.N_S, self.N_A), dtype=np.float64)
             for s in self.S:
+                # liuc
+                print ('s ', s, ' act ', self.avail_actions[s])
+                print([state_act_vars[s,a].x for a in self.avail_actions[s]])
+
                 if len(self.avail_actions[s]) == 0:
                     policy[s, :] = -1 # If no actions are available, return garbage value
                 else:
