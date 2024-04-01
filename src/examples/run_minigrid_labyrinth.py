@@ -17,7 +17,7 @@ from utils.results_saver import Results
 
 # %% Setup and create the environment
 env_settings = {
-    'agent_start_states' : [(2,2,0)],
+    'agent_start_states' : [(22,2,0)],
     'slip_p' : 0.1,
 }
 
@@ -62,25 +62,29 @@ controller_list = []
 
 if load_folder_name == '':
 
-    # Top left L-shape room #1
     '''
+    # Top left L-shape room #1
     initial_states = [(2,2,0)]
     final_states = [(12,2,0)]   
     controller_list.append(MiniGridController(0, initial_states, final_states, env_settings))
+    '''
 
     initial_states = [(12,2,0)]
     final_states = [(2,2,0)]  
     controller_list.append(MiniGridController(1, initial_states, final_states, env_settings))
 
+    '''
     # Top right L-shape room #2
     initial_states = [(12,2,0)]
     final_states = [(22,2,0)]    
     controller_list.append(MiniGridController(2, initial_states, final_states, env_settings))
+    '''
     
     initial_states = [(22,2,0)]
     final_states = [(12,2, 0)]   
     controller_list.append(MiniGridController(3, initial_states, final_states, env_settings))
-    
+    ''' 
+
     # middle top room #3
     initial_states = [(12,2,0)]
     final_states = [(12,6,0)]   
@@ -89,7 +93,6 @@ if load_folder_name == '':
     initial_states = [(12,6,0)] 
     final_states = [(12,2, 0)]   
     controller_list.append(MiniGridController(5, initial_states, final_states, env_settings))
-
     # Left top middle room #4 
     initial_states = [(2,6,0)]
     final_states = [(12,6,0)]
@@ -98,13 +101,11 @@ if load_folder_name == '':
     initial_states = [(12,6,0)]
     final_states = [(2,6,0)]
     controller_list.append(MiniGridController(7, initial_states, final_states, env_settings))
-    '''
     # Left middle room #5 
     initial_states = [(2,6,0)]
     final_states = [(2,12,0)]
     controller_list.append(MiniGridController(8, initial_states, final_states, env_settings))
     
-    '''
     initial_states = [(2,12,0)]
     final_states = [(2,6,0)]
     controller_list.append(MiniGridController(9, initial_states, final_states, env_settings))
@@ -117,7 +118,6 @@ if load_folder_name == '':
     initial_states = [(12,12,0)]
     final_states = [(12,6,0)]   
     controller_list.append(MiniGridController(11, initial_states, final_states, env_settings))
-
     # Middle middle room #7 
     initial_states = [(2,12,0)]
     final_states = [(12,12,0)]   
@@ -135,19 +135,15 @@ if load_folder_name == '':
     initial_states = [(22,12,0)]
     final_states = [(12,12,0)]
     controller_list.append(MiniGridController(15, initial_states, final_states, env_settings))
-    '''
     # Bottom left L-shape room #9
     initial_states = [(2,12,0)]
     final_states = [(2,22,0)] 
     controller_list.append(MiniGridController(16, initial_states, final_states, env_settings))
     
-    '''
     initial_states = [(2,22,0)]
     final_states = [(2,12,0)] 
     controller_list.append(MiniGridController(17, initial_states, final_states, env_settings))
-   '''
 
-    '''
     # Bottom middle room #10 
     initial_states = [(12,12,0)]
     final_states = [(12,22,0)] 
@@ -186,12 +182,10 @@ if load_folder_name == '':
     initial_states = [(2,6,0)]
     final_states = [(2,2,0)] 
     controller_list.append(MiniGridController(26, initial_states, final_states, env_settings))
-    '''
 
     initial_states = [(2,2,0)]
     final_states = [(2,6,0)] 
     controller_list.append(MiniGridController(27, initial_states, final_states, env_settings))
-    '''
     #
     initial_states = [(22,2,0)]
     final_states = [(22,12,0)] 
@@ -255,11 +249,11 @@ results.save(save_path)
 # %%
 
 # Construct high-level MDP and solve for the max reach probability
-hlmdp = HLMDP([(2,2,0)], env.goal_states, controller_list)
+hlmdp = HLMDP([(22,2,0)], env.goal_states, controller_list)
 
 #liuc
-for s in hlmdp.S:
-    print ('s ', s, ' act ', hlmdp.avail_actions[s])
+#for s in hlmdp.S:
+#    print ('s ', s, ' act ', hlmdp.avail_actions[s])
 
 
 policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
