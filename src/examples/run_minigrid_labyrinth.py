@@ -17,7 +17,7 @@ from utils.results_saver import Results
 
 # %% Setup and create the environment
 env_settings = {
-    'agent_start_states' : [(22,12,0)],
+    'agent_start_states' : [(2,12,0)],
     'slip_p' : 0.1,
 }
 
@@ -115,6 +115,8 @@ if load_folder_name == '':
     initial_states = [(12,12,0)]
     final_states = [(12,6,0)]   
     controller_list.append(MiniGridController(11, initial_states, final_states, env_settings))
+
+    '''
     # Middle middle room #7 
     initial_states = [(2,12,0)]
     final_states = [(12,12,0)]   
@@ -123,8 +125,8 @@ if load_folder_name == '':
     initial_states = [(12,12,0)]
     final_states = [(2,12,0)]  
     controller_list.append(MiniGridController(13, initial_states, final_states, env_settings))
-    
     '''
+    
     # Right middle room #8
     initial_states = [(12,12,0)]
     final_states = [(22,12,0)]
@@ -134,7 +136,6 @@ if load_folder_name == '':
     initial_states = [(22,12,0)]
     final_states = [(12,12,0)]
     controller_list.append(MiniGridController(15, initial_states, final_states, env_settings))
-    '''
 
     # Bottom left L-shape room #9
     initial_states = [(2,12,0)]
@@ -250,7 +251,7 @@ results.save(save_path)
 # %%
 
 # Construct high-level MDP and solve for the max reach probability
-hlmdp = HLMDP([(22,12,0)], env.goal_states, controller_list)
+hlmdp = HLMDP([(2,12,0)], env.goal_states, controller_list)
 
 #liuc
 #for s in hlmdp.S:

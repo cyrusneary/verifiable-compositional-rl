@@ -43,7 +43,7 @@ class Maze(MiniGridEnv):
 
         self.agent_start_states = agent_start_states
         # left top
-        self.goal_states = [(2,12,0)]
+        self.goal_states = [(22,12,0)]
 
         super().__init__(
             grid_size=size,
