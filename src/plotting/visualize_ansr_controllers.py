@@ -1,5 +1,20 @@
-
 # Run the labyrinth navigation experiment.
+''' Conventions
+
+Directions:
+----------
+0 = right
+1 = down
+2 = left
+3 = up
+
+Actions:
+--------
+left = 0
+right = 1
+forward = 2
+'''
+
 
 # %%
 import os, sys
@@ -55,18 +70,29 @@ for controller_dir in os.listdir(load_dir):
         controller = MiniGridController(0, load_dir=controller_load_path)
         controller_list.append(controller)
 
+HL_controller_list = [23,25]
+
 # re-order the controllers by index
 reordered_list = []
-for i in range(len(controller_list)):
+for HL_controller_id in HL_controller_list:
     for controller in controller_list:
-        if controller.controller_ind == i:
+        if controller.controller_ind == HL_controller_id:
             reordered_list.append(controller)
 controller_list = reordered_list
 
-# Construct high-level MDP and solve for the max reach probability
-hlmdp = HLMDP([(2,22,0)], env.goal_states, controller_list)
-policy, reach_prob, feasible_flag = hlmdp.solve_max_reach_prob_policy()
-
-# Construct a meta-controller and emprirically evaluate it.
-meta_controller = MetaController(policy, hlmdp.controller_list, hlmdp.state_list)
-meta_success_rate = meta_controller.demonstrate_capabilities(env, n_episodes=num_rollouts, n_steps=meta_controller_n_steps_per_rollout)
+obs = env.reset()
+print("Init State: "+str(obs))
+for controller in controller_list:
+    init = True
+    if init:
+        print("Final State: "+str(controller.get_final_states())+"\n")
+        print("** Using Controller **: "+str(controller.controller_ind)+"\n")
+        init = False
+    while (obs != controller.get_final_states()).any():
+        action,_states = controller.predict(obs, deterministic=True)
+        obs, reward, done, info = env.step(action)
+        print("Action: "+str(action))
+        print("Current State: "+str(obs)+"\n")
+        # env.render(highlight=False)
+        time.sleep(1.5)
+    

@@ -76,6 +76,8 @@ class MiniGridPixelController(MiniGridController):
             obs = self.training_env.reset()
             for step in range(n_steps):
                 action, _states = self.model.predict(obs, deterministic=True)
+                print("**")
+                print(action,_states)
                 obs, reward, done, info = self.training_env.step(action)
                 if render:
                     self.training_env.render(highlight=True)

@@ -1,9 +1,8 @@
 # %%
 from gym_minigrid.minigrid import *
-# from minigrid.window import Window
 import numpy as np
 
-class PixelMaze(MiniGridEnv):
+class Maze(MiniGridEnv):
     """
         Maze environment.
 
@@ -22,9 +21,9 @@ class PixelMaze(MiniGridEnv):
 
     def __init__(
         self,
-        agent_start_states = [(1,1,0)],
+        # left bottom
+        agent_start_states = [(0,0,0)],
         slip_p=0.0,
-        tile_size=20,
     ):
 
         """
@@ -38,14 +37,13 @@ class PixelMaze(MiniGridEnv):
             and takes another action instead.
         """
 
-        size = 20
+        size = 25
         width = size
         height = size
 
-        self.tile_size = tile_size
-
         self.agent_start_states = agent_start_states
-        self.goal_states = [(1, height - 2, 0), (1, height - 2, 1), (1, height - 2, 2), (1, height - 2, 3)]
+        # left top
+        self.goal_states = [(2,22,0)]
 
         super().__init__(
             grid_size=size,
@@ -53,17 +51,14 @@ class PixelMaze(MiniGridEnv):
         )
 
         # Action enumeration for this environment
-        self.actions = PixelMaze.Actions
+        self.actions = Maze.Actions
 
         # Actions are discrete integer values
         self.action_space = spaces.Discrete(len(self.actions))
 
-        # Observations are dictionaries containing an
-        # encoding of the grid and a textual 'mission' string
         self.observation_space = spaces.Box(
-            low=0,
-            high=255,
-            shape=(self.agent_view_size * self.tile_size, self.agent_view_size * self.tile_size, 3),
+            low=np.array([0,0,0]),
+            high=np.array([self.width, self.height, 3]),
             dtype='uint8'
         )
 
@@ -77,32 +72,70 @@ class PixelMaze(MiniGridEnv):
         self.grid.wall_rect(0, 0, width, height)
         
         # Generate the rooms
-        self.grid.wall_rect(0, 0, 6, 6)
-        self.grid.wall_rect(5, 0, 15, 6)
-        self.grid.wall_rect(8, 5, 6, 11)
-        self.grid.wall_rect(13, 5, 7, 11)
-        self.grid.wall_rect(0, 5, 9, 6)
-        self.grid.wall_rect(0, 10, 9, 6)
+        self.grid.wall_rect(1, 1, 23, 23)
 
-        # Add doors
-        self.put_obj(Door('grey', is_open=True), 3, 5)
-        self.put_obj(Door('grey', is_open=True), 5, 2)
-        self.put_obj(Door('grey', is_open=True), 10, 5)
-        self.put_obj(Door('grey', is_open=True), 14, 5)
-        self.put_obj(Door('grey', is_open=True), 5, 10)
-        self.put_obj(Door('grey', is_open=True), 3, 15)
-        self.put_obj(Door('grey', is_open=True), 16, 15)
+        self.grid.horz_wall(3, 3, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 4, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 5, 9, obj_type=Wall)
+
+        self.grid.horz_wall(3, 7, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 8, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 9, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 10, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 11, 9, obj_type=Wall)
+
+        self.grid.horz_wall(3, 13, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 14, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 15, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 16, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 17, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 18, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 19, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 20, 9, obj_type=Wall)
+        self.grid.horz_wall(3, 21, 9, obj_type=Wall)
+
+        self.grid.horz_wall(13, 3, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 4, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 5, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 7, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 8, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 9, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 10, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 11, 9, obj_type=Wall)
+
+        self.grid.horz_wall(13, 13, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 14, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 15, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 16, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 17, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 18, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 19, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 20, 9, obj_type=Wall)
+        self.grid.horz_wall(13, 21, 9, obj_type=Wall)
+
+        # Add doors (TO DO)
+        # self.put_obj(Door('grey', is_open=True), 3, 5)
+        # self.put_obj(Door('grey', is_open=True), 5, 2)
+        # self.put_obj(Door('grey', is_open=True), 10, 5)
+        # self.put_obj(Door('grey', is_open=True), 14, 5)
+        # self.put_obj(Door('grey', is_open=True), 5, 10)
+        # self.put_obj(Door('grey', is_open=True), 3, 15)
+        # self.put_obj(Door('grey', is_open=True), 16, 15)
 
         # Place a goal square
         for goal_state in self.goal_states:
             # self.put_obj(Goal(), goal_state[0], goal_state[1])
-            self.put_obj(Goal(), 1, height-2)
+            self.put_obj(Goal(), width-2, 1)
         
         # Place dangerous lava
-        self.grid.horz_wall(2, 7, 3, obj_type=Lava)
-        self.grid.horz_wall(6, 8, 2, obj_type=Lava)
-        self.grid.horz_wall(3, 12, 2, obj_type=Lava)
-        self.grid.horz_wall(6, 14, 2, obj_type=Lava)
+        '''
+        self.grid.horz_wall(1, 1, 3, obj_type=Lava)
+        self.grid.horz_wall(1, 2, 3, obj_type=Lava)
+        self.grid.horz_wall(1, 3, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 11, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 12, 3, obj_type=Lava)
+        self.grid.horz_wall(16, 13, 3, obj_type=Lava)
+        '''
 
         # Place the agent
         if self.agent_start_states:
@@ -117,55 +150,12 @@ class PixelMaze(MiniGridEnv):
 
     def gen_obs(self):
         """
-        Generate the agent's view (partially observable, low-resolution encoding)
-        """
-
-        grid, vis_mask = self.gen_obs_grid()
-
-        # Encode the partially observable view into a numpy array
-        image = grid.encode(vis_mask)
-
-        pov_img = self.get_obs_render(image, tile_size=self.tile_size)
-
-        assert hasattr(self, 'mission'), "environments must define a textual mission string"
-
-        # Observations are dictionaries containing:
-        # - an image (partially observable view of the environment)
-        # - the agent's direction/orientation (acting as a compass)
-        # - a textual mission string (instructions for the agent)
-        obs = {
-            'image': pov_img,
-            'direction': self.agent_dir,
-            'mission': self.mission
-        }
-
-        return pov_img
-
-    def get_obs_render(self, obs, tile_size=TILE_PIXELS//2):
-        """
-        Render an agent observation for visualization
-        """
-
-        grid, vis_mask = Grid.decode(obs)
-
-        # Render the whole grid
-        img = grid.render(
-            tile_size,
-            agent_pos=(self.agent_view_size // 2, self.agent_view_size - 1),
-            agent_dir=3,
-            highlight_mask=vis_mask
-        )
-
-        return img
-
-    def gen_state(self):
-        """
         Generate the observation of the agent, which in this environment, is its state.
         """
         pos = self.agent_pos
         direction = self.agent_dir
-        state = np.array([pos[0], pos[1], direction])
-        return state
+        obs_out = np.array([pos[0], pos[1], direction])
+        return obs_out
 
     def step(self, action):
         """
@@ -182,8 +172,8 @@ class PixelMaze(MiniGridEnv):
         }
 
         # Slip probability causes agent to randomly take the wrong action
-        # if np.random.rand() <= self.slip_p:
-        #     action = np.random.choice(np.array([0, 1, 2]))
+        if np.random.rand() <= self.slip_p:
+            action = np.random.choice(np.array([0, 1, 2]))
 
         current_pos = self.agent_pos
         current_cell = self.grid.get(*current_pos)

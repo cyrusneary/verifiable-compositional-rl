@@ -63,6 +63,7 @@ class HLMDP(object):
             controller = self.controller_list[controller_ind]
             controller_init_states = controller.get_init_states()
             controller_final_states = controller.get_final_states()
+            print(controller_init_states,controller_final_states)
             if controller_init_states not in self.state_list:
                 self.state_list.append(controller_init_states)
             if controller_final_states not in self.state_list:

@@ -21,8 +21,8 @@ class Maze(MiniGridEnv):
 
     def __init__(
         self,
-        # left bottom
-        agent_start_states = [(0,0,0)],
+        # right bottom
+        agent_start_states = [(22,22,0)],
         slip_p=0.0,
     ):
 

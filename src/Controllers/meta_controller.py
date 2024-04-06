@@ -151,6 +151,9 @@ class MetaController(object):
             self.reset()
             for step in range(n_steps):
                 action, _states = self.predict(obs, deterministic=True)
+                print(action)
+                print(_states)
+                print("\n")
                 obs, reward, done, info = env.step(action)
                 if render:
                     env.render(highlight=False)
