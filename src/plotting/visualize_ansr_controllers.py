@@ -94,5 +94,5 @@ for controller in controller_list:
         print("Action: "+str(action))
         print("Current State: "+str(obs)+"\n")
         # env.render(highlight=False)
-        time.sleep(1.5)
+        # time.sleep(0.5)
     
