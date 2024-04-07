@@ -85,7 +85,7 @@ class MinimalPublisher(Node):
         string_ind = base_path.find('src')
         assert(string_ind >= 0)
         base_path = base_path[0:string_ind + 4]
-        base_path = os.path.join(base_path, 'ansr_hello_world_py/verifiable-compositional-rl/src/data', 'saved_controllers')
+        base_path = os.path.join(base_path, 'verifiable-compositional-rl/src/data', 'saved_controllers')
 
         load_dir = os.path.join(base_path, load_folder_name)
 
