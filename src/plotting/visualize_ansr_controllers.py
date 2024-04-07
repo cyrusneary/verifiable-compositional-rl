@@ -32,6 +32,19 @@ from MDP.high_level_mdp import HLMDP
 from utils.results_saver import Results
 import time
 
+def obs2waypoint(obs):
+    x_minigrid, y_minigrid, yaw_minigrid = obs
+    x_cells, y_cells = [25,25]
+    x_border, y_border = [2,2]
+    x_max, y_max = [128,128]
+    
+    n_airsim = y_max-(y_minigrid-y_border)*(2*y_max)/(y_cells-2*y_border-1)
+    e_airsim = (x_minigrid-x_border)*(2*x_max)/(x_cells-2*x_border-1)-x_max
+    
+    # Yaw is not yet supported in ROS API
+    yaw_airsim = yaw_minigrid
+    return ([n_airsim, e_airsim, yaw_airsim])
+
 # %% Setup and create the environment
 env_settings = {
     'agent_start_states' : [(22,22,0)],
@@ -42,6 +55,7 @@ env = Maze(**env_settings)
 
 # env.render(highlight=False)
 # time.sleep(5)
+
 
 num_rollouts = 5
 meta_controller_n_steps_per_rollout = 500
@@ -92,7 +106,10 @@ for controller in controller_list:
         action,_states = controller.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         print("Action: "+str(action))
-        print("Current State: "+str(obs)+"\n")
+        print("Current State: "+str(obs))
         # env.render(highlight=False)
         # time.sleep(0.5)
+        # AirSim mapping
+        airsim_obs = obs2waypoint(obs)
+        print("AirSim State: "+str(airsim_obs)+"\n")
     

@@ -172,8 +172,9 @@ class Maze(MiniGridEnv):
         }
 
         # Slip probability causes agent to randomly take the wrong action
-        if np.random.rand() <= self.slip_p:
-            action = np.random.choice(np.array([0, 1, 2]))
+        # if np.random.rand() <= self.slip_p:
+        #     print("HERE")
+        #     action = np.random.choice(np.array([0, 1, 2]))
 
         current_pos = self.agent_pos
         current_cell = self.grid.get(*current_pos)
