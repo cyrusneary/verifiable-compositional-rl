@@ -107,7 +107,10 @@ class MinimalPublisher(Node):
                     reordered_list.append(controller)
         self.controller_list = reordered_list
 
-    def obs2waypoint(self, obs):
+    def minigrid2airsim(self, obs):
+        '''
+        Minigrid (x,y,yaw) -> AirSim (N,E,yaw) coordinates
+        '''
         x_minigrid, y_minigrid, yaw_minigrid = obs
         x_cells, y_cells = [25,25]
         x_border, y_border = [2,2]
@@ -119,6 +122,21 @@ class MinimalPublisher(Node):
         # Yaw is not yet supported in ROS API
         yaw_airsim = yaw_minigrid
         return ([n_airsim, e_airsim, yaw_airsim])
+
+    def airsim2minigrid(self, obs):
+        '''
+        AirSim (N,E,yaw) -> Minigrid (x,y,yaw) coordinates
+        '''
+        n_airsim, e_airsim, yaw_airsim = obs
+        x_cells, y_cells = [25,25]
+        x_border, y_border = [2,2]
+        x_max, y_max = [128,128]
+        
+        x_minigrid = x_border+(e_airsim+x_max)*(x_cells-2*x_border-1)/(2*x_max)
+        y_minigrid = y_border-(n_airsim-y_max)*(y_cells-2*y_border-1)/(2*y_max)
+        # Yaw is not yet supported in ROS API
+        yaw_minigrid = yaw_airsim
+        return ([x_minigrid, y_minigrid, yaw_minigrid])
 
     def pub_waypoint(self, obs_list):
         waypoint_msg = WaypointPath()
@@ -182,7 +200,7 @@ class MinimalPublisher(Node):
                 # env.render(highlight=False)
                 # time.sleep(0.5)
                 # AirSim mapping
-                airsim_obs = self.obs2waypoint(obs)
+                airsim_obs = self.mingrid2airsim(obs)
                 print("AirSim State: "+str(airsim_obs)+"\n")
                 obs_list.append(airsim_obs)
         self.pub_waypoint(obs_list)
