@@ -5,6 +5,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped
 from adk_node.msg import WaypointPath
+from adk_node.msg import TargetPerception
 
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy
 
@@ -12,6 +13,8 @@ from math import sin,cos,pi
 from tf_transformations import quaternion_from_euler 
 from tf_transformations import euler_from_quaternion 
 from tf_transformations import euler_from_matrix
+
+from utils.utility_functions import *
 
 
 # Run the labyrinth navigation experiment.
@@ -54,6 +57,14 @@ class MinimalPublisher(Node):
         super().__init__('sparse_waypoint_publisher')
         qos_profile = QoSProfile(depth=1,reliability=QoSReliabilityPolicy.RELIABLE,durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
         self.publisher_ = self.create_publisher(WaypointPath, 'adk_node/input/waypoints', qos_profile)
+        self.subscription = self.create_subscription(
+            TargetPerception,
+            'adk_node/ground_truth/perception',
+            self.gt_perception_callback,
+            10)
+        self.subscription  # prevent unused variable warning
+        
+        
         self.setup()
         self.run()
 
@@ -61,7 +72,7 @@ class MinimalPublisher(Node):
         # %% Setup and create the environment
         env_settings = {
             'agent_start_states' : [(22,22,0)],
-            'slip_p' : 0.1,
+            'slip_p' : 0.0,
         }
 
         self.env = Maze(**env_settings)
@@ -107,36 +118,8 @@ class MinimalPublisher(Node):
                     reordered_list.append(controller)
         self.controller_list = reordered_list
 
-    def minigrid2airsim(self, obs):
-        '''
-        Minigrid (x,y,yaw) -> AirSim (N,E,yaw) coordinates
-        '''
-        x_minigrid, y_minigrid, yaw_minigrid = obs
-        x_cells, y_cells = [25,25]
-        x_border, y_border = [2,2]
-        x_max, y_max = [128,128]
-        
-        n_airsim = y_max-(y_minigrid-y_border)*(2*y_max)/(y_cells-2*y_border-1)
-        e_airsim = (x_minigrid-x_border)*(2*x_max)/(x_cells-2*x_border-1)-x_max
-        
-        # Yaw is not yet supported in ROS API
-        yaw_airsim = yaw_minigrid
-        return ([n_airsim, e_airsim, yaw_airsim])
-
-    def airsim2minigrid(self, obs):
-        '''
-        AirSim (N,E,yaw) -> Minigrid (x,y,yaw) coordinates
-        '''
-        n_airsim, e_airsim, yaw_airsim = obs
-        x_cells, y_cells = [25,25]
-        x_border, y_border = [2,2]
-        x_max, y_max = [128,128]
-        
-        x_minigrid = x_border+(e_airsim+x_max)*(x_cells-2*x_border-1)/(2*x_max)
-        y_minigrid = y_border-(n_airsim-y_max)*(y_cells-2*y_border-1)/(2*y_max)
-        # Yaw is not yet supported in ROS API
-        yaw_minigrid = yaw_airsim
-        return ([x_minigrid, y_minigrid, yaw_minigrid])
+    def gt_perception_callback(self, gt_perception_msg):
+        self.get_logger().info('Entity "%s" with status "%s"' % gt_perception_msg.entity_id, gt_perception_msg.enter_or_leave)
 
     def pub_waypoint(self, obs_list):
         waypoint_msg = WaypointPath()
@@ -200,7 +183,7 @@ class MinimalPublisher(Node):
                 # env.render(highlight=False)
                 # time.sleep(0.5)
                 # AirSim mapping
-                airsim_obs = self.mingrid2airsim(obs)
+                airsim_obs = minigrid2airsim(obs)
                 print("AirSim State: "+str(airsim_obs)+"\n")
                 obs_list.append(airsim_obs)
         self.pub_waypoint(obs_list)

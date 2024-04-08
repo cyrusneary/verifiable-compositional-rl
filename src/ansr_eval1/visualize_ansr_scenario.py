@@ -6,7 +6,7 @@ from PIL import ImageFont
 import numpy as np
 import json
 
-f = open('../Scenarios/scenario_description_AS0024.json')
+f = open('../Scenarios/scenario_description_ASM009.json')
 data = json.load(f)
 #print(data)
 						
