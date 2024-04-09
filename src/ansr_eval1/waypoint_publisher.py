@@ -4,6 +4,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from adk_node.msg import WaypointPath
 from adk_node.msg import TargetPerception
 
@@ -15,6 +16,7 @@ from tf_transformations import euler_from_quaternion
 from tf_transformations import euler_from_matrix
 
 from utils.utility_functions import *
+from mission import *
 
 
 # Run the labyrinth navigation experiment.
@@ -57,21 +59,85 @@ class MinimalPublisher(Node):
         super().__init__('sparse_waypoint_publisher')
         qos_profile = QoSProfile(depth=1,reliability=QoSReliabilityPolicy.RELIABLE,durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
         self.publisher_ = self.create_publisher(WaypointPath, 'adk_node/input/waypoints', qos_profile)
-        self.subscription = self.create_subscription(
-            TargetPerception,
-            'adk_node/ground_truth/perception',
-            self.gt_perception_callback,
-            10)
-        self.subscription  # prevent unused variable warning
-        
-        
+        self.create_subscription(TargetPerception, 'adk_node/ground_truth/perception', self.gt_perception_callback, 10)
+        self.create_subscription(Odometry, 'adk_node/SimpleFlight/odom_local_ned', self.odom_callback, 10)
+        self.odom_msg = None
+        self.detected_entity_ids = []
+        self.visited_cell_idxs = []
+
         self.setup()
-        self.run()
+
+        while self.odom_msg == None:
+            rclpy.spin_once(self)
+
+        self.get_logger().info('Odom Message Received...')
+
+        self.mission = Mission('../../../mission_briefing/description.json')
+        
+        self.run_mission()
+
+    def run_mission(self):
+        for car in self.mission.car_list:
+            print(car.id)
+            print('priority: ', car.priority)
+            self.run_single_eoi_search(car)
+
+    def run_single_eoi_search(self, car):
+        for region in car.map:
+            print('probability: ',region.probability)
+            print(region.polygon)
+            print('cells: ', region.cells)
+            for cell_idx in region.cells:
+                if cell_idx in self.visited_cell_idxs: continue
+                hl_controller_idx_list = self.dummy_hl_controller(cell_idx)
+                hl_controller_list = self.get_controller_list(hl_controller_idx_list)
+                self.run_minigrid_solver_and_pub(hl_controller_list)
+                current_minigrid_state = airsim2minigrid((self.n_airsim, self.e_airsim, 0))
+                final_minigrid_state = hl_controller_list[-1].get_final_states()
+                while (current_minigrid_state != final_minigrid_state):
+                    rclpy.spin_once(self)
+                    current_minigrid_state = airsim2minigrid((self.n_airsim, self.e_airsim, 0))
+                    final_minigrid_state = list(hl_controller_list[-1].get_final_states()[0])
+                    print("Current State: {}, Final State: {}".format(current_minigrid_state, final_minigrid_state))   
+                    if car.id in self.detected_entity_ids: return
+
+
+    def get_controller_list(self,hl_controller_idx_list):
+        controller_list = []
+        for hl_controller_id in hl_controller_idx_list:
+            for controller in self.controller_list:
+                if controller.controller_ind == hl_controller_id:
+                    controller_list.append(controller)
+        return controller_list
+
+    def dummy_hl_controller(self, cell_idx):
+        controller_list = []
+        if cell_idx == 0:
+            controller_list.extend([3,1])
+        if cell_idx == 1:
+            controller_list.extend([0,2])
+        if cell_idx == 2:
+            controller_list.extend([3,4])
+        if cell_idx == 3:
+            controller_list.append(7)
+        if cell_idx == 5:
+            controller_list.extend([8,12,11])
+        if cell_idx == 6:
+            controller_list.extend([10,13])
+        if cell_idx == 7:
+            controller_list.extend([12,14])
+        if cell_idx == 9:
+            controller_list.extend([15,18])
+        if cell_idx == 10:
+            controller_list.extend([22,21])
+        if cell_idx == 14:
+            controller_list.append(29)
+        return controller_list
 
     def setup(self):
         # %% Setup and create the environment
         env_settings = {
-            'agent_start_states' : [(22,22,0)],
+            'agent_start_states' : [(22,2,0)], # Need to obtain this from start position -> config file
             'slip_p' : 0.0,
         }
 
@@ -101,25 +167,26 @@ class MinimalPublisher(Node):
         load_dir = os.path.join(base_path, load_folder_name)
 
         # %% Load the sub-system controllers
-        controller_list = []
+        self.controller_list = []
         for controller_dir in os.listdir(load_dir):
             controller_load_path = os.path.join(load_dir, controller_dir)
             if os.path.isdir(controller_load_path):
                 controller = MiniGridController(0, load_dir=controller_load_path)
-                controller_list.append(controller)
-
-        HL_controller_list = [23,25]
-
-        # re-order the controllers by index
-        reordered_list = []
-        for HL_controller_id in HL_controller_list:
-            for controller in controller_list:
-                if controller.controller_ind == HL_controller_id:
-                    reordered_list.append(controller)
-        self.controller_list = reordered_list
+                self.controller_list.append(controller)
+        
+        self.obs = self.env.reset() # Get the first state
 
     def gt_perception_callback(self, gt_perception_msg):
-        self.get_logger().info('Entity "%s" with status "%s"' % gt_perception_msg.entity_id, gt_perception_msg.enter_or_leave)
+        entity_status = "entered" if gt_perception_msg.enter_or_leave == 0 else "left"
+        entity_id = gt_perception_msg.entity_id
+        self.get_logger().info('Entity {} just {}...'.format(entity_id, entity_status))
+        if entity_id not in self.detected_entity_ids: self.detected_entity_ids.append(entity_id)
+
+    def odom_callback(self, odom_msg):
+        self.odom_msg = odom_msg
+        self.n_airsim = odom_msg.pose.pose.position.x
+        self.e_airsim = odom_msg.pose.pose.position.y
+        print("Current AirSim State: {}".format([self.n_airsim, self.e_airsim, 0]))
 
     def pub_waypoint(self, obs_list):
         waypoint_msg = WaypointPath()
@@ -156,7 +223,7 @@ class MinimalPublisher(Node):
             pose_msg_array.append(pose_msg)
 
         waypoint_msg.path = pose_msg_array
-        waypoint_msg.velocity = 5.0
+        waypoint_msg.velocity = 8.0
         waypoint_msg.lookahead = -1.0
         waypoint_msg.adaptive_lookahead = 0.0
         # waypoint_msg.drive_train_type = "ForwardOnly"
@@ -165,25 +232,24 @@ class MinimalPublisher(Node):
         self.publisher_.publish(waypoint_msg)
         self.get_logger().info('Publishing Waypoints...')
     
-    def run(self):
+    def run_minigrid_solver_and_pub(self,hl_controller_list):
         obs_list = []
-        obs = self.env.reset()
-        print("Init State: "+str(obs))
-        for controller in self.controller_list:
+        print("Init State: "+str(self.obs))
+        for controller in hl_controller_list:
             init = True
             if init:
                 print("Final State: "+str(controller.get_final_states())+"\n")
                 print("** Using Controller **: "+str(controller.controller_ind)+"\n")
                 init = False
-            while (obs != controller.get_final_states()).any():
-                action,_states = controller.predict(obs, deterministic=True)
-                obs, reward, done, info = self.env.step(action)
+            while (self.obs != controller.get_final_states()).any():
+                action,_states = controller.predict(self.obs, deterministic=True)
+                self.obs, reward, done, info = self.env.step(action)
                 print("Action: "+str(action))
-                print("Current State: "+str(obs))
+                print("Current State: "+str(self.obs))
                 # env.render(highlight=False)
                 # time.sleep(0.5)
                 # AirSim mapping
-                airsim_obs = minigrid2airsim(obs)
+                airsim_obs = minigrid2airsim(self.obs)
                 print("AirSim State: "+str(airsim_obs)+"\n")
                 obs_list.append(airsim_obs)
         self.pub_waypoint(obs_list)
