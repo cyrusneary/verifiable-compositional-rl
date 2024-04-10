@@ -62,15 +62,18 @@ def pointWithinPolygon(x, y, polygon):
 
 class Mission:
 
-    def __init__(self, descriptionFile):
+    def __init__(self, descriptionFile, configFile):
         self.car_list = []
         self.keep_out_zones = []
         self.route_list = []
         self.rect_list = []
         self.cells = []
 
-        f = open(descriptionFile)
-        self.data = json.load(f)
+        f_description = open(descriptionFile)
+        self.description_data = json.load(f_description)
+
+        f_config = open(configFile)
+        self.config_data = json.load(f_config)
 
         cell_0 = Cell(Polygon([(-128, 121), (-128, 135), (0,135), (0,121)]))
         cell_1 = Cell(Polygon([(0, 121), (0, 135), (128,135), (128,121)]))
@@ -107,10 +110,12 @@ class Mission:
         self.parse()
 
     def parse(self):
-        self.scenario_id = self.data["scenario_id"]
-        self.mission_class = self.data["mission_class"]
+        self.scenario_id = self.description_data["scenario_id"]
+        self.mission_class = self.description_data["mission_class"]
 
-        for entity in self.data["scenario_objective"]["entities_of_interest"]:
+        self.start_airsim_state = self.config_data["controllable_vehicle_start_loc"]
+
+        for entity in self.description_data["scenario_objective"]["entities_of_interest"]:
             id = entity["entity_id"]
             priority = entity["priority"]
             car = Car(id, priority)
@@ -129,7 +134,7 @@ class Mission:
 
         self.car_list.sort(key=carSortCriterion)
 
-        for zone in self.data["scenario_constraints"]["spatial_constraints"]["keep_out_zones"]:
+        for zone in self.description_data["scenario_constraints"]["spatial_constraints"]["keep_out_zones"]:
             polygon = zone["keep_out_polygon_vertices"]
             poly = Polygon(polygon)
             t_start = zone["no_earlier_than"]
@@ -138,7 +143,7 @@ class Mission:
             self.keep_out_zones.append(zone)
 
 
-        for route in self.data["scenario_objective"]["routes_of_interest"]:
+        for route in self.description_data["scenario_objective"]["routes_of_interest"]:
             for route_points in route["route_points"]:
                 self.route_list.append(route_points)
 
@@ -157,7 +162,7 @@ class Mission:
                 cell.in_keep_out_zone = True
 
 if __name__ == "__main__":
-        mission = Mission('../../../mission-schema/examples/Maneuver/RouteSearch/RSM002/description.json')
+        mission = Mission('../../../mission-schema/examples/Maneuver/RouteSearch/RSM002/description.json', '../../../mission-schema/examples/Maneuver/RouteSearch/RSM002/config.json') # change this to near the end Mission('../../../mission_briefing/description.json')
 
         for car in mission.car_list:
             print(car.id)
