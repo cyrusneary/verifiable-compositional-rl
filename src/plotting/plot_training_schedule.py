@@ -9,16 +9,45 @@ sys.path.append('..')
 from utils.results_saver import Results
 import tikzplotlib
 
+import argparse
+
+
 # %%
 # load_folder_name = '2021-05-22_13-53-56_minigrid_labyrinth'
 # experiment_name = 'minigrid_labyrinth'
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
-load_folder_name = '2022-10-14_19-10-42_unity_labyrinth'
-load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
-experiment_name = 'unity_labyrinth'
+#load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+#load_folder_name = '2022-10-14_19-10-42_unity_labyrinth'
+#load_folder_name = '2022-10-23_12-27-58_unity_labyrinth'
 
-load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
-experiment_name = 'minigrid_pixel_labyrinth'
+
+#experiment_name = 'unity_labyrinth'
+
+#load_folder_name = '2022-10-13_22-25-00_minigrid_pixel_labyrinth'
+
+#load_folder_name = '2024-07-25_14-02-58_unity_labyrinth'
+#experiment_name = 'minigrid_pixel_labyrinth'
+
+
+#########################################
+# Argument command window prompt 
+
+
+# Set up argument parser
+parser = argparse.ArgumentParser(description='Please provide the folder name and experiment name.')
+parser.add_argument('experiment_name', type=str, help='Name of the experiment')
+parser.add_argument('load_folder_name', type=str, help='Name of the folder to load')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Use the command-line arguments
+experiment_name = args.experiment_name
+load_folder_name = args.load_folder_name
+
+
+
+########################################
+
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
@@ -70,10 +99,33 @@ ax.set_ylim(yl)
         
 # plt.show()
 
+#################################
+# Added titles and labels for formatting 
+
+# Set title and labels with increased font size
+ax.set_title('Training Schedule', fontsize=20)
+ax.set_xlabel('Elapsed Total Training Steps', fontsize=15)
+ax.set_ylabel('Subsystem Index', fontsize=15)
+
+# Increase tick label size
+#ax.tick_params(axis='both', which='major', labelsize=12)
+
+#ax.legend(fontsize=12, loc='center left', labelspacing=1.8)
+
+#################################
+
 save_path = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.tex')
 tikzplotlib.save(save_path)
 
 
+# Save the plot as a PNG file
+save_path_png = os.path.join(os.path.curdir, 'figures', experiment_name + '_training_schedule.png')
+plt.savefig(save_path_png)
+
+
+plt.show()
+
 # %%
 
 # %%
+
