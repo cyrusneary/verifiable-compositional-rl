@@ -19,12 +19,16 @@ This code implements a novel framework for verifiable and compositional reinforc
 3. `conda env create -n comp_rl`
 4. `conda activate comp_rl`
 5. `pip install gym-minigrid==1.0.3`
-6. `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
-7. `conda install matplotlib==3.5.3`
-8. `cd src/examples`
-9. `python test_minigrid.py`
+6. `pip install protobuf==3.20.0`
+7. `pip install webcolors==1.11.1`
+9. `pip install matplotlib==3.4.2`
+10. `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
+12. `cd src/examples`
+13. `python test_minigrid.py`
 
-- If the 9 steps above run successfully, you are ready to 
+- If the steps above run successfully, you are ready to
+
+`conda install matplotlib==3.5.3`
 
 ### Python dependencies
 This library uses the following packages:
