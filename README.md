@@ -131,7 +131,7 @@ To run any of these scripts, follow the following format:
 
 python script.py folder_name
 
-For example: `python visualize_unity_labyrinth_controllers.py 2024-07-25_14-02-58_unity_labyrinth`
+For example: `python visualize_unity_labyrinth_controllers.py 2021-12-14_10-26-12_unity_labyrinth`
 
 
 
