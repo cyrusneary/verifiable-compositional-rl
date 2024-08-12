@@ -55,28 +55,28 @@ Go to ‘~/src/plotting-visualtization’, where you’ll find the curstomized p
 
 The plotting scripts are as follows:
 
-‘plot_training_results.py’: Plots the training results for a given training folder
-‘plot_training_schedule.py’: Plots the training schedule resulting from a given training folder
-‘plot_sub_task_specifications.py’: Plots the subtask specifications for a given training folder
-‘plot_training_variance.py’: Plots the training variance between N many given training folders.
+`plot_training_results.py`: Plots the training results for a given training folder
+`plot_training_schedule.py`: Plots the training schedule resulting from a given training folder
+`plot_sub_task_specifications.py`: Plots the subtask specifications for a given training folder
+`plot_training_variance.py`: Plots the training variance between N many given training folders.
 
 To use any of these scripts, run them using the following syntax on the terminal window:
 
-‘python script.py experiment_name folder_name’
+`python script.py experiment_name folder_name`
 
 Where experiment_name is either unity_labyrinth or minigrid_labyrinth depending on what environment the training folder corresponds to. For example, for the training results script you could run:
 
-‘python plot_training_results.py unity_labyrinth 2024-07-25_14-02-58_unity_labyrinth’
+`python plot_training_results.py unity_labyrinth 2024-07-25_14-02-58_unity_labyrinth`
 
 Which will instantly show a plot of the plotted simulation on your screen (which can be closed doing ctrl+C on the command window) and save a .png and .tex copy of the plotted image on the  ‘~/src/plotting/figures’ folder.
 
 The remainder of the scripts work the same, with the exception of plot_training_variance.py, which takes in one or more training folders in the form, for as many folders as you’d like to test. Note that this is the only script in the repo designed to take in more than one folder: 
 
-‘python plot_training_variance.py experiment_name folder1 folder2 folder3 … folderN-1 folderN’
+`python plot_training_variance.py experiment_name folder1 folder2 folder3 … folderN-1 folderN`
 
 For example:
 
-‘python plot_training_variance.py minigrid_labyrinth 2021-05-26_22-31-53_minigrid_labyrinth 2021-05-26_22-32-00_minigrid_labyrinth 2021-05-26_22-32-07_minigrid_labyrinth’
+`python plot_training_variance.py minigrid_labyrinth 2021-05-26_22-31-53_minigrid_labyrinth 2021-05-26_22-32-00_minigrid_labyrinth 2021-05-26_22-32-07_minigrid_labyrinth`
 
 
 
@@ -84,17 +84,17 @@ For example:
 
 The following are the visualization scripts, which show the user the final training results/trajectory picked resulting from the simulations. The scripts are as follows:
 
-‘visualize_unity_labyrinth_controllers.py’: It will show you the results of the Unity labyrinth experiment for a given folder. Upon running the script for its proper folder, you’ll be instructed to press play on the Unity scene where you have the labyrinth environment. Once you do so, you should be able to see the path resulting from your training controller.
+`visualize_unity_labyrinth_controllers.py`: It will show you the results of the Unity labyrinth experiment for a given folder. Upon running the script for its proper folder, you’ll be instructed to press play on the Unity scene where you have the labyrinth environment. Once you do so, you should be able to see the path resulting from your training controller.
 
-‘visualize_gridworld_labyrinth_controllers.py’: Disabled
+`visualize_gridworld_labyrinth_controllers.py`: Disabled
 
-‘visualize_gridworld_pixel_labyrinth_controllers.py’: Disabled
+`visualize_gridworld_pixel_labyrinth_controllers.py`: Disabled
 
 To run any of these scripts, follow the following format:
 
 python script.py folder_name
 
-For example: python visualize_unity_labyrinth_controllers.py 2024-07-25_14-02-58_unity_labyrinth
+For example: `python visualize_unity_labyrinth_controllers.py 2024-07-25_14-02-58_unity_labyrinth`
 
 
 
