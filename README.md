@@ -23,6 +23,7 @@ This code implements a novel framework for verifiable and compositional reinforc
 7. `pip install webcolors==1.11.1`
 9. `pip install matplotlib==3.4.2`
 10. `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
+11. `pip install tqdm`
 12. `cd src/examples`
 13. `python test_minigrid.py`
 
