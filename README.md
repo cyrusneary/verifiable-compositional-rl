@@ -33,7 +33,44 @@ This code implements a novel framework for verifiable and compositional reinforc
 Other training scripts that can be run under ‘src/examples` are:
 
 run_unity_labyrinth.py: It initializes the simulation on the Unity Labyrinth environment provided in the prerequisites. If the prior steps have been achieved successfully, run the script and the command window shall instruct you to go to Unity and press play to start the scene and the training. Once training is complete (which can take 15+ minutes, depending on your hardware configuration) 
+      
 
+
+
+
+
+### Python dependencies
+This library uses the following packages:
+- matplotlib
+- numpy
+- pickle
+- gurobipy [https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html](https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html)
+- gym_minigrid [https://github.com/maximecb/gym-minigrid](https://github.com/maximecb/gym-minigrid)
+- gym [https://github.com/openai/gym](https://github.com/openai/gym)
+- stable_baselines3 [https://github.com/DLR-RM/stable-baselines3](https://github.com/DLR-RM/stable-baselines3)
+- pytorch [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+ 	- Note: pytorch will be installed automatically by stable_baselines3 if you do not already have it installed.
+- mlagents v0.27.0 (release 18) [https://github.com/Unity-Technologies/ml-agents](https://github.com/Unity-Technologies/ml-agents)
+
+
+## Replicating experiments
+
+### Discrete Gridworld Labyrinth Experiments
+To run the example presented in the paper, navigate to the src directory and run:
+> python run_minigrid_labyrinth.py
+
+This will setup and run the entire labyrinth experiment, and it will automatically generate
+new folders in which to save the learned sub-systems and the testing results within src/data.
+
+### Continuous Labyrinth Experiments
+To run the continuous Labyrinth experiments, some extra setup is required.
+- First, download the appropriate version of Unity as instructed above.
+- Next, grab the Unity labyrinth project folder from [this repository](https://github.com/cyrusneary/unity_labyrinth), and drop it into the Unity HUB to create a new version of the labyrinth project in Unity.
+- Open this labyrinth project and in the Unity editor, open scenes\SampleScene.
+- In *this* repository, navigate to the \src directory. Run:
+	> python run_unity_labyrinth.py
+- You should see the line "Listening on port 5004. Start training by pressing the Play button in the Unity Editor."
+- Click on the play button at the top of the Unity editor to begin training.
 
 ### Inverse reinforcement learning scripts 
 
@@ -101,47 +138,6 @@ For example: `python visualize_unity_labyrinth_controllers.py 2024-07-25_14-02-5
 As inverse reinforcement learning capabilities are not enabled in this repository, please do not use ‘plot_irl_results.py’  or ‘visualize_irl_unity_labyrinth_controllers.py’
 
                          
-          
-
-        
-      
-
-
-
-
-
-### Python dependencies
-This library uses the following packages:
-- matplotlib
-- numpy
-- pickle
-- gurobipy [https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html](https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_grbpy_the_gurobi_python.html)
-- gym_minigrid [https://github.com/maximecb/gym-minigrid](https://github.com/maximecb/gym-minigrid)
-- gym [https://github.com/openai/gym](https://github.com/openai/gym)
-- stable_baselines3 [https://github.com/DLR-RM/stable-baselines3](https://github.com/DLR-RM/stable-baselines3)
-- pytorch [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
- 	- Note: pytorch will be installed automatically by stable_baselines3 if you do not already have it installed.
-- mlagents v0.27.0 (release 18) [https://github.com/Unity-Technologies/ml-agents](https://github.com/Unity-Technologies/ml-agents)
-
-
-## Replicating experiments
-
-### Discrete Gridworld Labyrinth Experiments
-To run the example presented in the paper, navigate to the src directory and run:
-> python run_minigrid_labyrinth.py
-
-This will setup and run the entire labyrinth experiment, and it will automatically generate
-new folders in which to save the learned sub-systems and the testing results within src/data.
-
-### Continuous Labyrinth Experiments
-To run the continuous Labyrinth experiments, some extra setup is required.
-- First, download the appropriate version of Unity as instructed above.
-- Next, grab the Unity labyrinth project folder from [this repository](https://github.com/cyrusneary/unity_labyrinth), and drop it into the Unity HUB to create a new version of the labyrinth project in Unity.
-- Open this labyrinth project and in the Unity editor, open scenes\SampleScene.
-- In *this* repository, navigate to the \src directory. Run:
-	> python run_unity_labyrinth.py
-- You should see the line "Listening on port 5004. Start training by pressing the Play button in the Unity Editor."
-- Click on the play button at the top of the Unity editor to begin training.
 
 ## Citation
 To cite this project, please use:
