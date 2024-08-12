@@ -49,7 +49,7 @@ Keep track of this folder name, as it will be essential to run the plotting scri
 
 ### Steps to run plotting and visualization scripts
 
-Go to ‘~/src/plotting’, where you’ll find the plotting and visualization scripts. 
+Go to ‘~/src/plotting-visualtization’, where you’ll find the curstomized plotting and visualization scripts. Ignore ‘~/src/plotting', as it's just there to allow the main training scripts to run appropriately.
 
 # Plotting scripts
 
