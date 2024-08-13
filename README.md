@@ -16,14 +16,9 @@ This code implements a novel framework for verifiable and compositional reinforc
 ### Step by step instructions
 1. Download & install [miniforge](https://github.com/conda-forge/miniforge)
 2. In a terminal navigate to the directory this README.md is in
-3. `conda env create -n comp_rl`
-4. `conda activate comp_rl`
-5. `pip install gym-minigrid==1.0.3`
-6. `pip install protobuf==3.20.0`
-7. `pip install webcolors==1.11.1`
-9. `pip install matplotlib==3.4.2`
-10. `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
-11. `pip install tqdm`
+3. `mkdir comp_rl`
+4.  `sudo tar -xzvf comp_rl.tar.gz -C /comp_rl`
+5.  `source ~/verifiable-compositional-rl/comp_rl/bin/activate`
 12. `cd src/examples`
 13. `python test_minigrid.py`
 
