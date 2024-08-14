@@ -18,11 +18,14 @@ This code implements a novel framework for verifiable and compositional reinforc
 2. Open a terminal window and enter: `git clone https://github.com/artificial-agent/verifiable-compositional-rl/tree/Merged-branch`, to clone this clone and branch.
 3. In a terminal navigate to the directory this README.md is in
 4. Go to https://utexas.box.com/s/6tqfxf3mb0eg7qwni85qeia82z34paqw to download and install the .tar ball that is necessary to recreate the environment required to run the repository. The name of the file should be `comp_rl.tar.gz`. Place this file in the base `~/verifiable-compositional-rl/` directory.
+
+Starting on the base `~/verifiable-compositional-rl/` directory, run the following:
+
 5. `mkdir comp_rl`
 6.  `sudo tar -xzvf comp_rl.tar.gz -C /comp_rl`
 7.  `source ~/verifiable-compositional-rl/comp_rl/bin/activate`
-12. `cd src/examples`
-13. `python test_minigrid.py`
+8. `cd src/examples`
+9. `python test_minigrid.py`
 
 - If the steps above run successfully, you are ready to run and train models using the repository 
 
