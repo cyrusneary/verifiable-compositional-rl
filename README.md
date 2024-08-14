@@ -19,7 +19,7 @@ This code implements a novel framework for verifiable and compositional reinforc
 3. In a terminal navigate to the directory this README.md is in
 4. Go to https://utexas.box.com/s/6tqfxf3mb0eg7qwni85qeia82z34paqw to download and install the .tar ball that is necessary to recreate the environment required to run the repository. The name of the file should be `comp_rl.tar.gz`. Place this file in the base `~/verifiable-compositional-rl/` directory.
 
-Starting on the base `~/verifiable-compositional-rl/` directory, run the following:
+Once this is done, and starting on the base `~/verifiable-compositional-rl/` directory, run the following:
 
 5. `mkdir comp_rl`
 6.  `sudo tar -xzvf comp_rl.tar.gz -C /comp_rl`
