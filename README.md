@@ -28,6 +28,9 @@ Once this is done, and starting on the base `~/verifiable-compositional-rl/` dir
 8. `cd src/examples`
 9. `python test_minigrid.py`
 
+
+10. If the system complains about a missing Qt dependency while running the scripts, do the fllowing command of the sort: `export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms/`
+
 - If the steps above run successfully, you are ready to run and train models using the repository 
 
 ### Running the Unity Labyrinth training scripts.
