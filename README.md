@@ -15,10 +15,12 @@ This code implements a novel framework for verifiable and compositional reinforc
 
 ### Step by step instructions
 1. Download & install [miniforge](https://github.com/conda-forge/miniforge)
-2. In a terminal navigate to the directory this README.md is in
-3. `mkdir comp_rl`
-4.  `sudo tar -xzvf comp_rl.tar.gz -C /comp_rl`
-5.  `source ~/verifiable-compositional-rl/comp_rl/bin/activate`
+2. Open a terminal window and enter: `git clone `
+3. In a terminal navigate to the directory this README.md is in
+4. Go to https://utexas.box.com/s/6tqfxf3mb0eg7qwni85qeia82z34paqw to download and install the .tar ball that is necessary to recreate the environment required to run the repository. The name of the file should be `comp_rl.tar.gz`. Place this file in the base `~/verifiable-compositional-rl/` directory.
+5. `mkdir comp_rl`
+6.  `sudo tar -xzvf comp_rl.tar.gz -C /comp_rl`
+7.  `source ~/verifiable-compositional-rl/comp_rl/bin/activate`
 12. `cd src/examples`
 13. `python test_minigrid.py`
 
