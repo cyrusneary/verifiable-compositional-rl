@@ -1,3 +1,5 @@
+### This repository is being actively edited as of 08/01/2024. Please refrain from using it until the fixes are complete, as the readMe might not provide accurate instructions as to how to run the scripts necessary to run the contents of the repository.
+
 # Verifiable Compositional Reinforcement Learning Systems
 
 This code implements a novel framework for verifiable and compositional reinforcement learning systems.
@@ -15,6 +17,23 @@ This code implements a novel framework for verifiable and compositional reinforc
 
 ### Step by step instructions
 1. Download & install [miniforge](https://github.com/conda-forge/miniforge)
+2. In a terminal navigate to the directory this README.md is in
+3. `conda env create -n comp_rl`
+4. `conda activate comp_rl`
+5. `pip install gym-minigrid==1.0.3`
+6. `pip install protobuf==3.20.0`
+7. `pip install webcolors==1.11.1`
+9. `pip install matplotlib==3.4.2`
+10. `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
+12. `cd src/examples`
+13. `python test_minigrid.py`
+
+- If the steps above run successfully, you are ready to go.
+
+`conda install matplotlib==3.5.3`
+
+
+## Extras
 2. Open a terminal window and enter: `git clone --branch Merged-branch https://github.com/artificial-agent/verifiable-compositional-rl.git`, to clone this clone and branch.
 3. In a terminal navigate to the directory this README.md is in
 4. Go to https://utexas.box.com/s/6tqfxf3mb0eg7qwni85qeia82z34paqw to download and install the .tar ball that is necessary to recreate the environment required to run the repository. The name of the file should be `comp_rl.tar.gz`. Place this file in the base `~/verifiable-compositional-rl/` directory.
@@ -38,10 +57,6 @@ Once this is done, and starting on the base `~/verifiable-compositional-rl/` dir
 Other training scripts that can be run under ‘src/examples` are:
 
 run_unity_labyrinth.py: It initializes the simulation on the Unity Labyrinth environment provided in the prerequisites. If the prior steps have been achieved successfully, run the script and the command window shall instruct you to go to Unity and press play to start the scene and the training. Once training is complete (which can take 15+ minutes, depending on your hardware configuration) 
-      
-
-
-
 
 
 ### Python dependencies

@@ -10,7 +10,11 @@ from utils.results_saver import Results
 
 import tikzplotlib
 
+import argparse
+
+
 # %%
+"""
 load_folder_name_list = [
     '2021-05-26_22-31-53_minigrid_labyrinth',
     '2021-05-26_22-32-00_minigrid_labyrinth',
@@ -23,10 +27,28 @@ load_folder_name_list = [
     '2021-05-26_22-34-49_minigrid_labyrinth',
     '2021-05-26_22-35-16_minigrid_labyrinth',
     ]
+"""
+
+#########################################
+# Argument command window prompt 
+
+# Set up argument parser
+parser = argparse.ArgumentParser(description='Please provide the experiment name followed by the names of the folders to plot the variance of.')
+parser.add_argument('experiment_name', type=str, help='Name of the experiment')
+parser.add_argument('load_folder_names', type=str, nargs='+', help='Names of the folders to load')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Use the command-line arguments
+experiment_name = args.experiment_name
+load_folder_name_list = args.load_folder_names
+
+########################################
 
 results_dict_list = []
 
-experiment_name = 'minigrid_labyrinth'
+#experiment_name = 'minigrid_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('/src')
@@ -128,10 +150,28 @@ ax.fill_between(x, comp_empirical_success_25, comp_empirical_success_75,
 yl = ax.get_ylim()
 ax.set_ylim(yl)
 
-ax.legend(fontsize=15)
+
+
+#################################
+# Added titles and labels for formatting 
+
+# Set title and labels with increased font size
+ax.set_title('Training Variance', fontsize=20)
+ax.set_xlabel('Elapsed Total Training Steps', fontsize=15)
+ax.set_ylabel('Probability Value', fontsize=15)
+
+# Increase tick label size
+#ax.tick_params(axis='both', which='major', labelsize=12)
+
+ax.legend(fontsize=12, loc='center left', labelspacing=1.8)
+
+#################################
 
 save_path = os.path.join(os.path.curdir, 'figures', 'variance_training_curves.tex')
 tikzplotlib.save(save_path)
+
+# Optional: Show the plot
+plt.show()
 
 # %%
 

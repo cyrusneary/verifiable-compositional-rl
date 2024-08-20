@@ -18,6 +18,8 @@ from optimization_problems.high_level_reward_opt import solve_max_reward
 
 import yaml
 
+import argparse
+
 # %% Setup and create the environment
 
 # Import the environment information
@@ -42,10 +44,30 @@ max_timesteps_per_component = 2e5
 # %% Set the load directory (if loading pre-trained sub-systems) 
 # or create a new directory in which to save results
 
-load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
+
+#########################################
+# Argument command window prompt 
+
+
+# Set up argument parser
+parser = argparse.ArgumentParser(description='Please provide the folder name and experiment name.')
+parser.add_argument('load_folder_name', type=str, help='Name of the folder to load')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Use the command-line arguments
+load_folder_name = args.load_folder_name
+
+
+########################################
+
+
+#load_folder_name = '2024-07-25_14-02-58_unity_labyrinth'
+# load_folder_name = '2021-12-13_22-26-40_unity_labyrinth'
 save_learned_controllers = True
 
-experiment_name = 'unity_labyrinth'
+#experiment_name = 'unity_labyrinth'
 
 base_path = os.path.abspath(os.path.curdir)
 string_ind = base_path.find('src')
