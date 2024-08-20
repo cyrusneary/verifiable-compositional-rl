@@ -31,7 +31,7 @@ This code implements a novel framework for verifiable and compositional reinforc
 `conda install matplotlib==3.5.3`
 
 
-## Extras
+## Alternative Installation
 2. Open a terminal window and enter: `git clone --branch Merged-branch https://github.com/artificial-agent/verifiable-compositional-rl.git`, to clone this clone and branch.
 3. In a terminal navigate to the directory this README.md is in
 4. Go to https://utexas.box.com/s/6tqfxf3mb0eg7qwni85qeia82z34paqw to download and install the .tar ball that is necessary to recreate the environment required to run the repository. The name of the file should be `comp_rl.tar.gz`. Place this file in the base `~/verifiable-compositional-rl/` directory.
