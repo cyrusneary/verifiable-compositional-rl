@@ -1,5 +1,3 @@
-### This repository is being actively edited as of 08/01/2024. Please refrain from using it until the fixes are complete, as the readMe might not provide accurate instructions as to how to run the scripts necessary to run the contents of the repository.
-
 # Verifiable Compositional Reinforcement Learning Systems
 
 This code implements a novel framework for verifiable and compositional reinforcement learning systems.
